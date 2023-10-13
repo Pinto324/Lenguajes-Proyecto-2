@@ -6,7 +6,9 @@
  */
 package Analizador;
 import Tokens.Simbolos;
-import Utilidades.Calcculadora;
+import Tokens.TablaSintactica;
+import Utilidades.Calculadora;
+import java.util.ArrayList;
 /**
  *
  * @author branp
@@ -39,13 +41,13 @@ public class AnalizadorSintactico {
                 //si ya existen elementos en ese bloque comprueba si un nuevo elemento pertenece y si no crea un nuevo bloque
                 }else{
                     //comprobar si es if
-                    if(ListaDeReportes.get(0).getLexema().equals("if")){
+                    if(ListaDeReportes.get(0).getSimbolo().equals("if")){
                         if(elemento.getLexema().equals("elif")||elemento.getLexema().equals("else")){
                             AumentarBloque = false;
                         }else{
                             AumentarBloque = true;
                         }   
-                    }else if(ListaDeReportes.get(0).getLexema().equals("for")){
+                    }else if(ListaDeReportes.get(0).getSimbolo().equals("for")){
                         if(elemento.getLexema().equals("else")){
                             AumentarBloque = false;
                         }else{
@@ -70,9 +72,9 @@ public class AnalizadorSintactico {
     public void analisisSintactico(){
             Simbolos elemento = Tokens.get(posicion);
             int Fila = elemento.getFila();
+            String Simbolo = elemento.getLexema();
             //condición si el elemento es ID: Declaración	|ID ASIGNACION EXPRESION | ID ARIMETICO/ASIGNACION EXPRESION
-            if(elemento.getTipoToken().equals("ID")){
-                String Simbolo = elemento.getLexema();
+            if(elemento.getTipoToken().equals("ID")){    
                 posicion++;
                 elemento = Tokens.get(posicion);
                 //Si es asignación de una
@@ -105,7 +107,11 @@ public class AnalizadorSintactico {
                                     CambiarDeLinea(Fila);
                                     break;
                             }else{
-                                Cadena += " "+elemento.getLexema();
+                                if(elemento.getLexema().equals("**")){
+                                    Cadena += " ^";
+                                }else{
+                                    Cadena += " "+elemento.getLexema();
+                                }
                                 if(elemento.getTipoToken().equals("Aritméticos")){
                                     seCerroLaCadena = false;
                                 }else if(elemento.getTipoToken().equals("Constantes")){
@@ -135,7 +141,7 @@ public class AnalizadorSintactico {
                             if(esTernario){
                                 Reportes.reporteAsignacion(Simbolo,Tipo, "Undefined", elemento.getFila(),elemento.getColumna(),bloque,"Ternario");
                             }else if(esCadena){
-                                Reportes.reporteAsignacion(Simbolo,Tipo, cadena, elemento.getFila(),elemento.getColumna(),bloque,"Asignación");
+                                Reportes.reporteAsignacion(Simbolo,Tipo, Cadena, elemento.getFila(),elemento.getColumna(),bloque,"Asignación");
                             }else{
                                 Reportes.reporteAsignacion(Simbolo,Tipo, Double.toString(calc.evaluarExpresion(Cadena)), elemento.getFila(),elemento.getColumna(),bloque,"Asignación");
                             }
@@ -154,13 +160,13 @@ public class AnalizadorSintactico {
                             Cadena += elemento.getLexema();
                             posicion++;
                             elemento = Tokens.get(posicion);
-                            if(elemento.getPatron().equals(abrio)){
+                            if(elemento.getPatron().equals(Abrio)){
                                 cerro = true;
                             }
                         }
                         if(cerro){
                             elemento = Tokens.get(posicion-1);
-                            Reportes.reporteAsignacion(Simbolo,"Arreglo", "Undefined", elemento.getFila(),elemento.getColumna());
+                            Reportes.reporteAsignacion(Simbolo,"Arreglo", "Undefined", elemento.getFila(),elemento.getColumna(),bloque,"Asignación");
                         }else{
                             Reportes.reporteErrorAsignacion(4,elemento.getFila(),elemento.getColumna(),bloque,"Asignación");
                         }
@@ -214,7 +220,7 @@ public class AnalizadorSintactico {
                             if(elemento.getLexema().equals(",")){
                                 coma = false;
                             }else{
-                                coma = true
+                                coma = true;
                             }
                     }
                     elemento = Tokens.get(posicion-1);
@@ -227,19 +233,18 @@ public class AnalizadorSintactico {
                 }
                 //para Bloques IF y elif
             }else if(elemento.getTipoToken().equals("Palabras clave")){
-                palabra = elemento.getLexema();
+                String palabra = elemento.getLexema();
                 //Switch para el manejo de palabras claves:
                 switch (palabra) {
                     //para bloques IF y elif
                     case "if":
                     case "elif":
-                        String Simbolo = elemento.getLexema();
                         String Tipo = "boolean";
                         posicion++;
                         elemento = Tokens.get(posicion);
                         //EXPRESION ->	| boolean
                         if(elemento.getPatron().equals("booleanas")){
-                            boolean Valor = elemento.getLexema();
+                            String Valor = elemento.getLexema();
                             posicion++;
                             elemento = Tokens.get(posicion);
                             if(elemento.getLexema().equals(":")){
@@ -326,18 +331,18 @@ public class AnalizadorSintactico {
                         boolean EsComa = false;
                         posicion++;
                         elemento = Tokens.get(posicion);
-                        if(elemento.getTipoToken("ID")){
+                        if(elemento.getTipoToken().equals("ID")){
                             posicion++;
                             elemento = Tokens.get(posicion);
                             if(elemento.getLexema().equals("(")){
-                                while (posicion < Tokens.size() && Linea == Tokens.get(posicion).getFila()) {
-                                    if(elemento.getTipoToken("ID")||elemento.getTipoToken("Constantes")){
+                                while (posicion < Tokens.size() && Fila == Tokens.get(posicion).getFila()) {
+                                    if(elemento.getTipoToken().equals("ID")||elemento.getTipoToken().equals("Constantes")){
                                         EsComa = false;
-                                    }else if(elemento.getLexema(",")){
+                                    }else if(elemento.getLexema().equals(",")){
                                         EsComa = true;
-                                    }else if(elemento.getTipoToken("Aritméticos")){
+                                    }else if(elemento.getTipoToken().equals("Aritméticos")){
                                         EsComa = true;
-                                    }else if(elemento.getLexema(":")||elemento.getLexema(")")){
+                                    }else if(elemento.getLexema().equals(":")||elemento.getLexema().equals(")")){
 
                                     }else{
                                         //si viene algún tipo de token que no se esperaba:
@@ -384,7 +389,7 @@ public class AnalizadorSintactico {
                                         boolean errorParametro = false;
                                         boolean DoblePuntos = false;
                                         //aqui va el funcionamiento si se usa metodo range
-                                        while (posicion < Tokens.size() && Linea == Tokens.get(posicion).getFila()) {
+                                        while (posicion < Tokens.size() && Fila == Tokens.get(posicion).getFila()) {
                                             posicion++;
                                             elemento = Tokens.get(posicion);
                                             if(elemento.getLexema().equals(",")){

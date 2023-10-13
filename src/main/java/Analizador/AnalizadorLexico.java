@@ -5,6 +5,7 @@
  */
 package Analizador;
 import Tokens.Simbolos;
+import java.util.ArrayList;
 /**
  *
  * @author branp
@@ -30,7 +31,7 @@ public class AnalizadorLexico {
             //if para validar si es comentario:
             if(EsComentario(temporal)){
                 inicio = columna;
-                while(temporal!='\n'||posicion < texto.length()){
+                while(temporal!='\n' && posicion < texto.length()){
                     apoyoCadena += temporal;
                     posicion++;
                     columna++;
@@ -43,7 +44,10 @@ public class AnalizadorLexico {
             }else if(esComillasDobles(temporal)){
                 boolean seCierra = true;
                 inicio = columna;
-                while(temporal!='"'||posicion < texto.length()){
+                posicion++;
+                columna++;
+                temporal = texto.charAt(posicion);
+                while(temporal!='"'&& posicion < texto.length()){
                     //aqui se maneja si no se cerro la doble comilla
                     if(temporal=='\n'){
                         reporteErrorCadena(apoyoCadena);
@@ -65,8 +69,11 @@ public class AnalizadorLexico {
             //if para validar una cadena de comilla simple
             }else if(esComillaSimple(temporal)){
                 inicio = columna;
+                posicion++;
+                columna++;
+                temporal = texto.charAt(posicion);
                 boolean seCierra = true;
-                while(temporal!='\''||posicion < texto.length()){
+                while(temporal!='\'' && posicion < texto.length()){
                     //aqui se maneja si no se cerro la comilla simple
                     if(temporal=='\n'){
                         reporteErrorCadena(apoyoCadena);
@@ -87,10 +94,10 @@ public class AnalizadorLexico {
                 }          
                 //if encargado de manejar identificadores xd
             }else if ((temporal >= 'a' && temporal <= 'z')||(temporal >= 'A' && temporal <= 'Z')||temporal=='_'){
-                Inicio = columna;
+                inicio = columna;
                 boolean sinError = true; //variable que define que el identificador es legal 
                 //ciclo el cual se encarga de acabar todo cuando encuentre un espacio
-                while(temporal!=' '||posicion < texto.length()||temporal!='\n'||clasificadorCaracter(temporal)==-1){
+                while(temporal!=' ' && posicion < texto.length() && temporal!='\n' && clasificadorCaracter(temporal)==-1){
                     //condicion la cual revisa que sea un caracter valido para identificador
                     if((temporal >= 'a' && temporal <= 'z')||(temporal >= 'A' && temporal <= 'Z')||temporal=='_'||(temporal >= '0' && temporal <= '9')){
                         apoyoCadena += temporal;
@@ -101,7 +108,7 @@ public class AnalizadorLexico {
                     }else{
                         reporteErrorIdentificadores(apoyoCadena);
                         //este ciclo while se encarga de llevar la lectura hasta el siguiente espacio o fin.
-                        while(temporal!=' '||posicion < texto.length()){
+                        while(temporal!=' ' && posicion < texto.length()){
                             if(temporal=='\n'){
                                 fila++;
                                 columna=0;
@@ -137,7 +144,7 @@ public class AnalizadorLexico {
                 boolean sinErrorDec = true;//variable para manejar error de no poner algo después del .
                 boolean esDecimal = false; //variable para definir si es decimal o no
                 //ciclo el cual se encarga de acabar todo cuando encuentre un espacio
-                while(temporal!=' '||posicion < texto.length()||temporal!='\n'){
+                while(temporal!=' '&& posicion < texto.length() && temporal!='\n'){
                     //aqui se mete si es un numero entero
                     if((temporal >= '0' && temporal <= '9')){
                         apoyoCadena += temporal;
@@ -157,14 +164,14 @@ public class AnalizadorLexico {
                         temporal = texto.charAt(posicion);
                     }else{
                         //aqui va si hay un error en la cadena, lo cual genera un error dependiendo si es decimal o no y acaba el ciclo
-                        sinError false;
+                        sinError = false;
                         if(esDecimal){
                             reporteErrorDecimales(apoyoCadena);
                         }else{
                             reporteErrorEntero(apoyoCadena);
                         }  
                        //este ciclo while se encarga de llevar la lectura hasta el siguiente espacio o fin.
-                        while(temporal!=' '||posicion < texto.length()){
+                        while(temporal!=' ' && posicion < texto.length()){
                             if(temporal=='\n'){
                                 fila++;
                                 columna=0;
@@ -188,7 +195,7 @@ public class AnalizadorLexico {
                 String Ayudador = "";
                 boolean llave = false;
                 try{
-                    Ayudador = temporal + texto.charAt(posicion+1);
+                    Ayudador = Character.toString(temporal) +Character.toString(texto.charAt(posicion + 1));
                     llave = EsCaracterDoble(Ayudador);
                 }catch(StringIndexOutOfBoundsException e){       
                     System.out.println("No es doble");
@@ -227,79 +234,81 @@ public class AnalizadorLexico {
 
     //metodo que se encarga de crear el report por cada caracter:
     public void reporteCaracter(char Carac){
+        Simbolos token;
         switch(clasificadorCaracter(Carac)){
             case 1:
-                Simbolos token = new Simbolos("Aritméticos","Suma",Carac,fila,columna,inicio);
+                token = new Simbolos("Aritméticos","Suma",Character.toString(Carac),fila,columna,inicio);
                 tokenRecopilado.add(token);
                 break;
             case 2:
-                Simbolos token = new Simbolos("Aritméticos","Resta",Carac,fila,columna,inicio);
+                token = new Simbolos("Aritméticos","Resta",Character.toString(Carac),fila,columna,inicio);
                 tokenRecopilado.add(token);
                 break;
             case 3:
-                Simbolos token = new Simbolos("Aritméticos","División",Carac,fila,columna,inicio);
+                token = new Simbolos("Aritméticos","División",Character.toString(Carac),fila,columna,inicio);
                 tokenRecopilado.add(token);
                 break;
             case 4:
-                Simbolos token = new Simbolos("Aritméticos","Módulo",Carac,fila,columna,inicio);
+                token = new Simbolos("Aritméticos","Módulo",Character.toString(Carac),fila,columna,inicio);
                 tokenRecopilado.add(token);
                 break;
             case 5:
-                Simbolos token = new Simbolos("Aritméticos","Multiplicación",Carac,fila,columna,inicio);
+                token = new Simbolos("Aritméticos","Multiplicación",Character.toString(Carac),fila,columna,inicio);
                 tokenRecopilado.add(token);
                 break;
             case 6:
-                Simbolos token = new Simbolos("Comparación","Mayor que ",Carac,fila,columna,inicio);
+                token = new Simbolos("Comparación","Mayor que ",Character.toString(Carac),fila,columna,inicio);
                 tokenRecopilado.add(token);
                 break;
             case 7:
-                Simbolos token = new Simbolos("Comparación","Menor que ",Carac,fila,columna,inicio);
+                token = new Simbolos("Comparación","Menor que ",Character.toString(Carac),fila,columna,inicio);
                 tokenRecopilado.add(token);
                 break;
             case 8:
-                Simbolos token = new Simbolos("Asignación","Asignación",Carac,fila,columna,inicio);
+                token = new Simbolos("Asignación","Asignación",Character.toString(Carac),fila,columna,inicio);
                 tokenRecopilado.add(token);
                 break;
             case 9:
-                Simbolos token = new Simbolos("Otros","Paréntesis",Carac,fila,columna,inicio);
+                token = new Simbolos("Otros","Paréntesis",Character.toString(Carac),fila,columna,inicio);
                 tokenRecopilado.add(token);
                 break;
             case 10:
-                Simbolos token = new Simbolos("Otros","Paréntesis",Carac,fila,columna,inicio);
+                token = new Simbolos("Otros","Paréntesis",Character.toString(Carac),fila,columna,inicio);
                 tokenRecopilado.add(token);
                 break;
             case 11:
-                Simbolos token = new Simbolos("Otros","Llaves",Carac,fila,columna,inicio);
+                token = new Simbolos("Otros","Llaves",Character.toString(Carac),fila,columna,inicio);
                 tokenRecopilado.add(token);
                 break;
             case 12:
-                Simbolos token = new Simbolos("Otros","Llaves",Carac,fila,columna,inicio);
+                token = new Simbolos("Otros","Llaves",Character.toString(Carac),fila,columna,inicio);
                 tokenRecopilado.add(token);
                 break;
             case 13:
-                Simbolos token = new Simbolos("Otros","Corchetes",Carac,fila,columna,inicio);
+                token = new Simbolos("Otros","Corchetes",Character.toString(Carac),fila,columna,inicio);
                 tokenRecopilado.add(token);
                 break;
             case 14:
-                Simbolos token = new Simbolos("Otros","Corchetes",Carac,fila,columna,inicio);
+                token = new Simbolos("Otros","Corchetes",Character.toString(Carac),fila,columna,inicio);
                 tokenRecopilado.add(token);
                 break;
             case 15:
-                Simbolos token = new Simbolos("Otros","Coma",Carac,fila,columna,inicio);
+                token = new Simbolos("Otros","Coma",Character.toString(Carac),fila,columna,inicio);
                 tokenRecopilado.add(token);
                 break;
             case 16:
-                Simbolos token = new Simbolos("Otros","Punto y coma",Carac,fila,columna,inicio);
+                token = new Simbolos("Otros","Punto y coma",Character.toString(Carac),fila,columna,inicio);
                 tokenRecopilado.add(token);
                 break;
             case 17:
-                Simbolos token = new Simbolos("Otros","Dos puntos ",Carac,fila,columna,inicio);
+                token = new Simbolos("Otros","Dos puntos ",Character.toString(Carac),fila,columna,inicio);
                 tokenRecopilado.add(token);
                 break;                                        
             default:
                 System.out.println("wtf xd");
                 break;
         }
+    }
 
     public int clasificadorCaracter(char carac){
         if(carac == '+'){
@@ -340,41 +349,40 @@ public class AnalizadorLexico {
             return -1;
         }
     }
-    }
     /////////////////////////////////////////////////////////////////////////////
     //Metodos usados para clasificar caracteres dobles
     //Metodo que se encarga de crear el reporte de un caracter si es doble:
     public void reporteCaracterDoble(String Carac){
+        Simbolos token;
         switch(clasificadorCaracterDoble(Carac.charAt(0))){
             case 1:
-                Simbolos token = new Simbolos("Aritméticos","Exponente",Carac,fila,columna,inicio);
+                token = new Simbolos("Aritméticos","Exponente",Carac,fila,columna,inicio);
                 tokenRecopilado.add(token);
                 break;
             case 2:
-                Simbolos token = new Simbolos("Aritméticos","División",Carac,fila,columna,inicio);
+                token = new Simbolos("Aritméticos","División",Carac,fila,columna,inicio);
                 tokenRecopilado.add(token);
                 break;
             case 3:
-                Simbolos token = new Simbolos("Comparación","Igual",Carac,fila,columna,inicio);
+                token = new Simbolos("Comparación","Igual",Carac,fila,columna,inicio);
                 tokenRecopilado.add(token);
                 break;
             case 4:
-                Simbolos token = new Simbolos("Comparación","Diferente",Carac,fila,columna,inicio);
+                token = new Simbolos("Comparación","Diferente",Carac,fila,columna,inicio);
                 tokenRecopilado.add(token);
                 break;
             case 5:
-                Simbolos token = new Simbolos("Comparación","Mayor o igual que",Carac,fila,columna,inicio);
+                token = new Simbolos("Comparación","Mayor o igual que",Carac,fila,columna,inicio);
                 tokenRecopilado.add(token);
                 break;
             case 6:
-                Simbolos token = new Simbolos("Comparación","Menor o igual que",Carac,fila,columna,inicio);
+                token = new Simbolos("Comparación","Menor o igual que",Carac,fila,columna,inicio);
                 tokenRecopilado.add(token);
                 break;                      
             default:
                 System.out.println("wtf xd");
                 break;
         }
-
     }
     
     //metodo para validar si es un char doble:!+ =+
@@ -420,7 +428,7 @@ public class AnalizadorLexico {
     //Identificadores:
   //reporte de identificadores:
     public void reporteIdentificadores(String Ide){
-        Simbolos token = new Simbolos("ID","([\w]|_)+(\w|\d)*",Ide,fila,columna,inicio);
+        Simbolos token = new Simbolos("ID","([w]|_)+(w|d)*",Ide,fila,columna,inicio);
          tokenRecopilado.add(token);
     }
     //Reporte error de identificador:
@@ -432,11 +440,7 @@ public class AnalizadorLexico {
   //Constantes:
   //metodo para validar si es una cadena:
   public boolean esComillasDobles(char carac){
-    if(carac == '"'){
-        return true;
-    }else{
-        return false;
-    }
+        return carac == '"';
   }
     public void reporteCadena(String comentario){
         Simbolos token = new Simbolos("Constantes","Cadena",comentario,fila,columna,inicio);
@@ -448,11 +452,7 @@ public class AnalizadorLexico {
         tokenErrores.add(error);
     }
   public boolean esComillaSimple(char carac){
-    if(carac == '\''){
-        return true;
-    }else{
-        return false;
-    }
+        return carac == '\'';
   }
     //reporte para Enteros:
     public void reporteEnteros(String Ide){
@@ -491,17 +491,18 @@ public class AnalizadorLexico {
     //Operadores logicos
      //metodo para crear el reporte de un operador logico:
         public void reporteOperadorLogico(String Carac){
+        Simbolos token;
         switch(esLogico(Carac)){
             case 1:
-                Simbolos token = new Simbolos("Lógicos","y",Carac,fila,columna,inicio);
+                token = new Simbolos("Lógicos","y",Carac,fila,columna,inicio);
                 tokenRecopilado.add(token);
                 break;
             case 2:
-                Simbolos token = new Simbolos("Lógicos","o",Carac,fila,columna,inicio);
+                token = new Simbolos("Lógicos","o",Carac,fila,columna,inicio);
                 tokenRecopilado.add(token);
                 break;
             case 3:
-                Simbolos token = new Simbolos("Lógicos","Negación",Carac,fila,columna,inicio);
+                token = new Simbolos("Lógicos","Negación",Carac,fila,columna,inicio);
                 tokenRecopilado.add(token);
                 break;                    
             default:
@@ -512,13 +513,16 @@ public class AnalizadorLexico {
     }
     //metodo para saber que tipo de operador es:
     public int esLogico(String Cadena){
-        if(Cadena.equals("and")){
-            return 1;
-        }else if(Cadena.equals("or")){
-            return 2;
-        }else if(Cadena.equals("not")){
-            return 3;
-        }else{return -1;}
+        switch (Cadena) {
+            case "and":
+                return 1;
+            case "or":
+                return 2;
+            case "not":
+                return 3;
+            default:
+                return -1;
+        }
     }
     //////////////////////////////////////////////////////
     //Palabras Clave
@@ -529,24 +533,49 @@ public class AnalizadorLexico {
         }
     //metodo para saber si es palabra reservada :
     public boolean esPalabraReservada(String Cadena){
-        if(Cadena.equals("as")||Cadena.equals("assert")||Cadena.equals("break")||Cadena.equals("class")||Cadena.equals("continue")){
-            return true;
-        }else if(Cadena.equals("def")||Cadena.equals("del")||Cadena.equals("elif")||Cadena.equals("else")||Cadena.equals("except")){
-            return true;
-        }else if(Cadena.equals("finally")||Cadena.equals("for")||Cadena.equals("from")||Cadena.equals("global")||Cadena.equals("if")){
-            return true;
-        }else if(Cadena.equals("import")||Cadena.equals("in")||Cadena.equals("is")||Cadena.equals("lambda")||Cadena.equals("None")){
-            return true;
-        }else if(Cadena.equals("nonlocal")||Cadena.equals("pass")||Cadena.equals("raise")||Cadena.equals("return")||Cadena.equals("try")){
-            return true;
-        }else if(Cadena.equals("while")||Cadena.equals("with")||Cadena.equals("yield")){
-            return true;
-        }else{return false;}
+        switch (Cadena) {
+            case "as":
+            case "assert":
+            case "break":
+            case "class":
+            case "continue":
+                return true;
+            case "def":
+            case "del":
+            case "elif":
+            case "else":
+            case "except":
+                return true;
+            case "finally":
+            case "for":
+            case "from":
+            case "global":
+            case "if":
+                return true;
+            case "import":
+            case "in":
+            case "is":
+            case "lambda":
+            case "None":
+                return true;
+            case "nonlocal":
+            case "pass":
+            case "raise":
+            case "return":
+            case "try":
+                return true;
+            case "while":
+            case "with":
+            case "yield":
+                return true;
+            default:
+                return false;
+        }
     }
     //////////////////////////////////////////////////////
     //reporte de error para token no identificado:
     public void reporteErrorNoIdentificado(char Cad){
-        Simbolos error = new Simbolos("404","Caracter No identificado",Cad,fila,columna,inicio);
+        Simbolos error = new Simbolos("404","Caracter No identificado",Character.toString(Cad),fila,columna,inicio);
         tokenErrores.add(error);
     }
     ///////////////////////////////////////////////////
@@ -557,5 +586,9 @@ public class AnalizadorLexico {
 
     public void settokenRecopilado(ArrayList<Simbolos> tokenRecopilado) {
         this.tokenRecopilado = tokenRecopilado;
+    }
+    
+    public ArrayList<Simbolos> getErroresRecopilado() {
+        return tokenErrores;
     }
 }

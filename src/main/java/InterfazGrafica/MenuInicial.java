@@ -413,16 +413,24 @@ public class MenuInicial extends javax.swing.JFrame {
         if(AreaDeTexto.getText().isEmpty()!=true){
             AreaDeErrores.setText("");
             AnalizadorLexico.analisisLexico(AreaDeTexto.getText());
-            if(false){
+            if(AnalizadorLexico.getErroresRecopilado().isEmpty()){
                 //Mostramos ventana de reportes
                 BtnAnalizarSintac.setVisible(false);
                 AreaDeErrores.setText("");
                 AreaDeErrores.setText("Se han encontrado errores Léxicos en el aŕea de texto. Da click en el boton de reporte de errores para más informacion");
             } else {      
+                AreaDeErrores.setText("");
+                AreaDeErrores.setText("No hay errores uwuXDXD");
                 BtnAnalizarSintac.setVisible(true);
             }
         } else {
             JOptionPane.showMessageDialog(this,"No hay texto dentro del area para poder realizar un analisis Léxico", "ERROR", JOptionPane.ERROR_MESSAGE);
+        }
+        int i = 0;
+        System.out.println(AnalizadorLexico.gettokenRecopilado().size());
+        while(i< AnalizadorLexico.gettokenRecopilado().size()){
+            System.out.println(AnalizadorLexico.gettokenRecopilado().get(i).getLexema());
+            i++;
         }
     }//GEN-LAST:event_BtnAnalizarActionPerformed
 

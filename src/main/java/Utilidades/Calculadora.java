@@ -1,3 +1,4 @@
+package Utilidades;
 import java.util.Stack;
 
 public class Calculadora {
@@ -37,7 +38,7 @@ public class Calculadora {
 
     private static boolean esOperador(String token) {
         return token.equals("+") || token.equals("-") || token.equals("*") || token.equals("/")
-                || token.equals("%") || token.equals("**");
+                || token.equals("%") || token.equals("^");
     }
 
     private static boolean tienePrecedencia(char op1, char op2) {
@@ -58,10 +59,9 @@ public class Calculadora {
                 return 1;
             case '*':
             case '/':
-            case '%':
                 return 2;
             case '^':
-            case '**':
+            case '%':
                 return 3;
             default:
                 return 0;
@@ -83,7 +83,7 @@ public class Calculadora {
             operandos.push(operand1 / operand2);
         } else if (operador == '%') {
             operandos.push(operand1 % operand2);
-        } else if (operador == '^' || operador == '**') {
+        } else if (operador == '^') {
             operandos.push(Math.pow(operand1, operand2));
         }
     }
