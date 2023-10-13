@@ -9,28 +9,28 @@ import Analizador.AnalizadorLexico;
 import Analizador.ReportesSintacticos;
 import Tokens.Simbolos;
 import Tokens.TablaSintactica;
-import java.awt.BorderLayout;
 import java.util.ArrayList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextArea;
 import javax.swing.table.DefaultTableModel;
 
 /**
  *
  * @author branp
  */
-public class TablaDeSimbolosGlobal extends javax.swing.JFrame {
+public class TablasGenerales extends javax.swing.JDialog {
+
     private ReportesSintacticos ReporteSintactico = new ReportesSintacticos();
     private AnalizadorLexico ReporteLexico = new AnalizadorLexico();
     private ArrayList<TablaSintactica> reporteRecopiladoS = new ArrayList<>();
     private ArrayList<Simbolos> reporteRecopiladoL = new ArrayList<>();
-    /** 
-     * Creates new form TablaDeTokens
+    /**
+     * Creates new form TablasGenerales
+     * @param parent
+     * @param modal
      * @param X
      */
-    public TablaDeSimbolosGlobal(int X) {
+    public TablasGenerales(java.awt.Frame parent, boolean modal, int X) {
+        super(parent, modal);
         initComponents();
         //Para ponerlo en el centro y que el usuario no lo pueda hacer grande o pequeño
          this.setLocationRelativeTo(null);
@@ -49,19 +49,33 @@ public class TablaDeSimbolosGlobal extends javax.swing.JFrame {
                     model.addRow(fila);
                 }
                 Tabla.setModel(model);
+                break;
             case 2:       
         reporteRecopiladoS = ReporteSintactico.getreporteRecopilado();
-        model.addColumn("Símbolo");
-        model.addColumn("Tipo");
-        model.addColumn("Valor");
-        model.addColumn("Línea");
-        model.addColumn("Columna");
-        model.addColumn("Bloque");
-        Tabla = new JTable(model);
-            for (TablaSintactica dato : reporteRecopiladoS) {
-            Object[] fila = {dato.getSimbolo(), dato.getTipo(), dato.getValor(), dato.getfila(), dato.getcolumna(),dato.getbloque()};
-            model.addRow(fila);
-        }
+                model.addColumn("Símbolo");
+                model.addColumn("Tipo");
+                model.addColumn("Valor");
+                model.addColumn("Línea");
+                model.addColumn("Columna");
+                model.addColumn("Bloque");
+                Tabla = new JTable(model);
+                    for (TablaSintactica dato : reporteRecopiladoS) {
+                    Object[] fila = {dato.getSimbolo(), dato.getTipo(), dato.getValor(), dato.getfila(), dato.getcolumna(),dato.getbloque()};
+                    model.addRow(fila);
+                }
+                break;
+            case 3:
+                reporteRecopiladoL = ReporteLexico.getErroresRecopilado();
+                model.addColumn("Token");
+                model.addColumn("Error:");
+                model.addColumn("Lexema");
+                model.addColumn("Fila");
+                model.addColumn("Columna");
+                    for (Simbolos dato : reporteRecopiladoL) {
+                    Object[] fila = {dato.getTipoToken(), dato.getPatron(), dato.getLexema(), dato.getFila(), dato.getColumna()};
+                    model.addRow(fila);
+                }
+                Tabla.setModel(model);
                 break;
             default:
                 break;
@@ -87,7 +101,7 @@ public class TablaDeSimbolosGlobal extends javax.swing.JFrame {
         jPanel4 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         jPanel2.setBackground(new java.awt.Color(153, 153, 255));
 
@@ -204,7 +218,7 @@ public class TablaDeSimbolosGlobal extends javax.swing.JFrame {
         this.dispose();
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable Tabla;
     private javax.swing.JButton jButton1;

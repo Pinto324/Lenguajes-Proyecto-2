@@ -22,16 +22,17 @@ public class AnalizadorLexico {
     }
     
     public void analisisLexico(String texto){
+        texto += " ";
         char temporal;
         tokenRecopilado = new ArrayList<>();
         tokenErrores = new ArrayList<>();
-        while (posicion < texto.length()) {
+        while (posicion < texto.length()-1) {
             temporal = texto.charAt(posicion);
             String apoyoCadena = "";
             //if para validar si es comentario:
             if(EsComentario(temporal)){
                 inicio = columna;
-                while(temporal!='\n' && posicion < texto.length()){
+                while(temporal!='\n' && posicion < texto.length()-1){
                     apoyoCadena += temporal;
                     posicion++;
                     columna++;
@@ -40,6 +41,7 @@ public class AnalizadorLexico {
                 reporteComentario(apoyoCadena);
                 fila++;
                 columna=0;
+                posicion++;
                 //if para validar una cadena de comilla doble
             }else if(esComillasDobles(temporal)){
                 boolean seCierra = true;
@@ -47,7 +49,7 @@ public class AnalizadorLexico {
                 posicion++;
                 columna++;
                 temporal = texto.charAt(posicion);
-                while(temporal!='"'&& posicion < texto.length()){
+                while(temporal!='"'&& posicion < texto.length()-1){
                     //aqui se maneja si no se cerro la doble comilla
                     if(temporal=='\n'){
                         reporteErrorCadena(apoyoCadena);
@@ -65,6 +67,7 @@ public class AnalizadorLexico {
                 }
                 if(seCierra){
                     reporteCadena(apoyoCadena);
+                    posicion++;
                 }       
             //if para validar una cadena de comilla simple
             }else if(esComillaSimple(temporal)){
@@ -73,7 +76,7 @@ public class AnalizadorLexico {
                 columna++;
                 temporal = texto.charAt(posicion);
                 boolean seCierra = true;
-                while(temporal!='\'' && posicion < texto.length()){
+                while(temporal!='\'' && posicion < texto.length()-1){
                     //aqui se maneja si no se cerro la comilla simple
                     if(temporal=='\n'){
                         reporteErrorCadena(apoyoCadena);
@@ -97,7 +100,7 @@ public class AnalizadorLexico {
                 inicio = columna;
                 boolean sinError = true; //variable que define que el identificador es legal 
                 //ciclo el cual se encarga de acabar todo cuando encuentre un espacio
-                while(temporal!=' ' && posicion < texto.length() && temporal!='\n' && clasificadorCaracter(temporal)==-1){
+                while(temporal!=' ' && posicion < texto.length()-1 && temporal!='\n' && clasificadorCaracter(temporal)==-1){
                     //condicion la cual revisa que sea un caracter valido para identificador
                     if((temporal >= 'a' && temporal <= 'z')||(temporal >= 'A' && temporal <= 'Z')||temporal=='_'||(temporal >= '0' && temporal <= '9')){
                         apoyoCadena += temporal;
@@ -105,10 +108,15 @@ public class AnalizadorLexico {
                         columna++;
                         temporal = texto.charAt(posicion);
                     //aqui se maneja si se encuentra un caracter invalido para un identificador:
+                    }else if(temporal=='\r'||temporal=='\t'||temporal=='\f'||temporal=='\b'){
+                        posicion++;
+                        temporal = texto.charAt(posicion);
+                    }else if(temporal=='.'){
+                        break;
                     }else{
                         reporteErrorIdentificadores(apoyoCadena);
                         //este ciclo while se encarga de llevar la lectura hasta el siguiente espacio o fin.
-                        while(temporal!=' ' && posicion < texto.length()){
+                        while(temporal!=' ' && posicion < texto.length()-1){
                             if(temporal=='\n'){
                                 fila++;
                                 columna=0;
@@ -144,7 +152,7 @@ public class AnalizadorLexico {
                 boolean sinErrorDec = true;//variable para manejar error de no poner algo después del .
                 boolean esDecimal = false; //variable para definir si es decimal o no
                 //ciclo el cual se encarga de acabar todo cuando encuentre un espacio
-                while(temporal!=' '&& posicion < texto.length() && temporal!='\n'){
+                while(temporal!=' '&& posicion < texto.length()-1 && temporal!='\n'){
                     //aqui se mete si es un numero entero
                     if((temporal >= '0' && temporal <= '9')){
                         apoyoCadena += temporal;
@@ -162,16 +170,14 @@ public class AnalizadorLexico {
                         posicion++;
                         columna++;
                         temporal = texto.charAt(posicion);
+                    }else if(!(clasificadorCaracter(temporal)==-1)||temporal=='\n'||temporal=='\r'){
+                        break;
                     }else{
+                        apoyoCadena += temporal;
                         //aqui va si hay un error en la cadena, lo cual genera un error dependiendo si es decimal o no y acaba el ciclo
                         sinError = false;
-                        if(esDecimal){
-                            reporteErrorDecimales(apoyoCadena);
-                        }else{
-                            reporteErrorEntero(apoyoCadena);
-                        }  
                        //este ciclo while se encarga de llevar la lectura hasta el siguiente espacio o fin.
-                        while(temporal!=' ' && posicion < texto.length()){
+                        while(temporal!=' ' && posicion < texto.length()-1){
                             if(temporal=='\n'){
                                 fila++;
                                 columna=0;
@@ -180,8 +186,15 @@ public class AnalizadorLexico {
                                 columna++;
                                 posicion++;
                                 temporal = texto.charAt(posicion);
+                                apoyoCadena += temporal;
                             } 
+
                     }
+                    if(esDecimal){
+                            reporteErrorDecimales(apoyoCadena);
+                        }else{
+                            reporteErrorEntero(apoyoCadena);
+                        }  
                 }//si no hay errores se crea el reporte correctamente, de lo contrario n
                 }
                 if(sinError && sinErrorDec){
@@ -195,7 +208,7 @@ public class AnalizadorLexico {
                 String Ayudador = "";
                 boolean llave = false;
                 try{
-                    Ayudador = Character.toString(temporal) +Character.toString(texto.charAt(posicion + 1));
+                    Ayudador = Character.toString(temporal)+Character.toString(texto.charAt(posicion + 1));
                     llave = EsCaracterDoble(Ayudador);
                 }catch(StringIndexOutOfBoundsException e){       
                     System.out.println("No es doble");
@@ -219,6 +232,8 @@ public class AnalizadorLexico {
                 posicion++;
             }else if(temporal == ' '){
                 columna++;
+                posicion++;
+            }else if(temporal=='\r'||temporal=='\t'||temporal=='\f'||temporal=='\b'){
                 posicion++;
             }else{
                 inicio = columna;
@@ -301,9 +316,13 @@ public class AnalizadorLexico {
                 tokenRecopilado.add(token);
                 break;
             case 17:
-                token = new Simbolos("Otros","Dos puntos ",Character.toString(Carac),fila,columna,inicio);
+                token = new Simbolos("Otros","Dos puntos",Character.toString(Carac),fila,columna,inicio);
                 tokenRecopilado.add(token);
-                break;                                        
+                break; 
+            case 18:
+                token = new Simbolos("Otros","Punto",Character.toString(Carac),fila,columna,inicio);
+                tokenRecopilado.add(token);
+                break;    
             default:
                 System.out.println("wtf xd");
                 break;
@@ -345,6 +364,10 @@ public class AnalizadorLexico {
             return 16;
         }else if(carac == ':'){
             return 17;
+        }else if(carac == '.'){
+            return 18;
+        }else if(carac == '!'){
+            return 19;
         }else{
             return -1;
         }
@@ -385,7 +408,7 @@ public class AnalizadorLexico {
         }
     }
     
-    //metodo para validar si es un char doble:!+ =+
+    //metodo para validar si es un char doble:
     public boolean EsCaracterDoble(String Caracteres){
         if(Caracteres.equals("**")||Caracteres.equals("//")||Caracteres.equals("==")||Caracteres.equals("!=")||Caracteres.equals(">=")||Caracteres.equals("<=")){
             return true;
@@ -590,5 +613,14 @@ public class AnalizadorLexico {
     
     public ArrayList<Simbolos> getErroresRecopilado() {
         return tokenErrores;
+    }
+    //Metodo para resetar variables
+    public void resetVariable(){
+        fila = 1;
+        columna = 0;
+        posicion = 0;
+        inicio = 0;
+        tokenRecopilado = new ArrayList<>();
+        tokenErrores = new ArrayList<>();
     }
 }
