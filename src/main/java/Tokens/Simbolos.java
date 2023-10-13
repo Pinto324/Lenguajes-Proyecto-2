@@ -14,6 +14,7 @@ import java.util.ArrayList;
 public class Simbolos {    
     private String Lexema;
     private String TipoDeToken;
+    private String patron;
     private String descripcion;
     private ArrayList<Character> SignosAgrupacion;
     private ArrayList<Character> Aritmeticos;
@@ -26,6 +27,7 @@ public class Simbolos {
     private ArrayList<Character> Otros;
     private int fila;
     private int columna;
+    private int inicio;
 
     public Simbolos() {
         this.agrupacionTokens();
@@ -41,6 +43,9 @@ public class Simbolos {
 
     public void setSignosAgrupacion(ArrayList<Character> signosAgrupacion) {
         this.SignosAgrupacion = signosAgrupacion;
+    }
+    public ArrayList<Character> getOpeAritmeticos() {
+        return Aritmeticos;
     }
 
     public ArrayList<Character> getOperadoresMatematicos() {
@@ -77,7 +82,9 @@ public class Simbolos {
    public int getColumna() {
         return columna;
     }
-
+    public int getInicio() {
+        return inicio;
+    }
     public String getDescripcion() {
         return descripcion;
     }
@@ -85,16 +92,25 @@ public class Simbolos {
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
     }
+     public String getPatron() {
+        return patron;
+    }
+
+    public void setPatron(String patron) {
+        this.patron = patron;
+    }
     
      /**
     *
     * Constructor de simbolos
     */
-      public Simbolos(String tipoToken, String lexema, int fila, int columna) {
-        this.Lexema = lexema;
+      public Simbolos(String tipoToken, String patron ,String lexema, int fila, int columna, int inicio) {
         this.TipoDeToken = tipoToken;
+        this.patron = patron;
+        this.Lexema = lexema;
         this.fila = fila;
         this.columna = columna;
+        this.inicio = inicio;
     }
     
     private void agrupacionTokens() {
