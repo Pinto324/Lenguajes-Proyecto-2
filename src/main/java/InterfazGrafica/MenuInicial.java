@@ -12,10 +12,17 @@ import Utilidades.Atajos;
 import Utilidades.ManejadorDeArchivos;
 import Utilidades.ManejadorDeTexto;
 import Utilidades.Numerador;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,6 +31,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
 import javax.swing.text.DefaultEditorKit;
+import javax.swing.undo.UndoManager;
 
 /**
  *
@@ -37,7 +45,7 @@ public class MenuInicial extends javax.swing.JFrame {
     private FileOutputStream salida;
     private JFileChooser seleccion = new JFileChooser();
     private File archivo;
-    
+    private UndoManager undoManager = new UndoManager();
     private ConcurrentHashMap<Integer, ManejadorDeTexto> EstadoPrevio;
     private ConcurrentHashMap<Integer, ManejadorDeTexto> EstadoActual;
     public String texto="";
@@ -63,7 +71,8 @@ public class MenuInicial extends javax.swing.JFrame {
         EstadoActual = new ConcurrentHashMap<>();
         ScrollPanelTexto.setRowHeaderView(ControlDeLinea);
         Atajos.addUndoFunctionality(AreaDeTexto);
-        BtnAnalizarSintac.setVisible(false);
+         // Crea un UndoManager y asócialo al Document del JTextArea
+        AreaDeTexto.getDocument().addUndoableEditListener(undoManager);
     }
 
     /**
@@ -87,7 +96,6 @@ public class MenuInicial extends javax.swing.JFrame {
         BtnAnalizar = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         AreaDeErrores = new javax.swing.JTextArea();
-        BtnAnalizarSintac = new javax.swing.JButton();
         jPanel5 = new javax.swing.JPanel();
         jMenuBar1 = new javax.swing.JMenuBar();
         MenuArchivo = new javax.swing.JMenu();
@@ -99,12 +107,12 @@ public class MenuInicial extends javax.swing.JFrame {
         MenuSimbolos = new javax.swing.JMenuItem();
         RTablaLexico = new javax.swing.JMenuItem();
         jMenuItem2 = new javax.swing.JMenuItem();
-        jMenuItem3 = new javax.swing.JMenuItem();
+        TablaSintacticoBloqueMenu = new javax.swing.JMenuItem();
         jMenuItem4 = new javax.swing.JMenuItem();
-        jMenuItem5 = new javax.swing.JMenuItem();
-        jMenuItem6 = new javax.swing.JMenuItem();
+        CantidadDeFuncionesMenu = new javax.swing.JMenuItem();
+        CantidadDeLlamadasMenu = new javax.swing.JMenuItem();
         jMenuItem7 = new javax.swing.JMenuItem();
-        jMenuItem8 = new javax.swing.JMenuItem();
+        ParametrosMenu = new javax.swing.JMenuItem();
         MenuEdicion = new javax.swing.JMenu();
         MenuCopiar = new javax.swing.JMenuItem();
         MenuPegar = new javax.swing.JMenuItem();
@@ -210,14 +218,6 @@ public class MenuInicial extends javax.swing.JFrame {
         AreaDeErrores.setFocusable(false);
         jScrollPane2.setViewportView(AreaDeErrores);
 
-        BtnAnalizarSintac.setFont(new java.awt.Font("Times New Roman", 1, 18)); // NOI18N
-        BtnAnalizarSintac.setLabel("Analisis Sintactico");
-        BtnAnalizarSintac.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                BtnAnalizarSintacActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -230,10 +230,8 @@ public class MenuInicial extends javax.swing.JFrame {
                         .addGap(36, 36, 36)
                         .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 638, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGap(141, 141, 141)
-                        .addComponent(BtnAnalizar, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(97, 97, 97)
-                        .addComponent(BtnAnalizarSintac)))
+                        .addGap(282, 282, 282)
+                        .addComponent(BtnAnalizar, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
@@ -241,11 +239,9 @@ public class MenuInicial extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(5, 5, 5)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(BtnAnalizar)
-                    .addComponent(BtnAnalizarSintac))
-                .addGap(21, 21, 21)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(BtnAnalizar)
+                .addGap(20, 20, 20)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -327,17 +323,32 @@ public class MenuInicial extends javax.swing.JFrame {
         });
         MenuGenerar.add(jMenuItem2);
 
-        jMenuItem3.setText("Tabla Sintactico Bloque");
-        MenuGenerar.add(jMenuItem3);
+        TablaSintacticoBloqueMenu.setText("Tabla Sintactico Bloque");
+        TablaSintacticoBloqueMenu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                TablaSintacticoBloqueMenuActionPerformed(evt);
+            }
+        });
+        MenuGenerar.add(TablaSintacticoBloqueMenu);
 
         jMenuItem4.setText("Instrucciones por bloque");
         MenuGenerar.add(jMenuItem4);
 
-        jMenuItem5.setText("Cantidad De Funciones");
-        MenuGenerar.add(jMenuItem5);
+        CantidadDeFuncionesMenu.setText("Cantidad De Funciones");
+        CantidadDeFuncionesMenu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CantidadDeFuncionesMenuActionPerformed(evt);
+            }
+        });
+        MenuGenerar.add(CantidadDeFuncionesMenu);
 
-        jMenuItem6.setText("Cantidad De Llamadas");
-        MenuGenerar.add(jMenuItem6);
+        CantidadDeLlamadasMenu.setText("Cantidad De Llamadas");
+        CantidadDeLlamadasMenu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CantidadDeLlamadasMenuActionPerformed(evt);
+            }
+        });
+        MenuGenerar.add(CantidadDeLlamadasMenu);
 
         jMenuItem7.setText("Errores Sintacticos");
         jMenuItem7.addActionListener(new java.awt.event.ActionListener() {
@@ -347,8 +358,13 @@ public class MenuInicial extends javax.swing.JFrame {
         });
         MenuGenerar.add(jMenuItem7);
 
-        jMenuItem8.setText("Parametros");
-        MenuGenerar.add(jMenuItem8);
+        ParametrosMenu.setText("Parametros");
+        ParametrosMenu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ParametrosMenuActionPerformed(evt);
+            }
+        });
+        MenuGenerar.add(ParametrosMenu);
 
         jMenuBar1.add(MenuGenerar);
 
@@ -357,8 +373,14 @@ public class MenuInicial extends javax.swing.JFrame {
         MenuCopiar.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         MenuCopiar.setText("Copiar");
         MenuCopiar.setToolTipText("");
+        MenuCopiar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuCopiarActionPerformed(evt);
+            }
+        });
         MenuEdicion.add(MenuCopiar);
 
+        MenuPegar.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_V, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         MenuPegar.setText("Pegar");
         MenuPegar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -368,10 +390,21 @@ public class MenuInicial extends javax.swing.JFrame {
         MenuEdicion.add(MenuPegar);
 
         MenuRehacer.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Z, java.awt.event.InputEvent.CTRL_DOWN_MASK));
-        MenuRehacer.setText("Rehacer");
+        MenuRehacer.setText("DesHacer");
+        MenuRehacer.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuRehacerActionPerformed(evt);
+            }
+        });
         MenuEdicion.add(MenuRehacer);
 
-        MenuDeshacer.setText("jMenuItem2");
+        MenuDeshacer.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Y, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        MenuDeshacer.setText("Rehacer");
+        MenuDeshacer.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuDeshacerActionPerformed(evt);
+            }
+        });
         MenuEdicion.add(MenuDeshacer);
 
         jMenuBar1.add(MenuEdicion);
@@ -445,11 +478,13 @@ public class MenuInicial extends javax.swing.JFrame {
     }//GEN-LAST:event_MenuAbrirActionPerformed
 
     private void MenuGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuGuardarActionPerformed
-
+        guardarTextoEnArchivo(AreaDeTexto);
     }//GEN-LAST:event_MenuGuardarActionPerformed
 
     private void MenuPegarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuPegarActionPerformed
-        
+        String Nuevo = AreaDeTexto.getText();
+        Nuevo += obtenerTextoDesdePortapapeles();
+        AreaDeTexto.setText(Nuevo);
     }//GEN-LAST:event_MenuPegarActionPerformed
 
     private void MenuSalirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuSalirActionPerformed
@@ -489,20 +524,6 @@ public class MenuInicial extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_BtnAnalizarActionPerformed
 
-    private void BtnAnalizarSintacActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnAnalizarSintacActionPerformed
-        boolean manejadorSintactico = false;
-        if (manejadorSintactico) {
-            if (!manejadorSintactico) {
-                JOptionPane.showMessageDialog(this, "Se leyó correctamente", "Alerta", JOptionPane.INFORMATION_MESSAGE);
-                MenuSimbolos.setEnabled(true);
-            } else{
-                JOptionPane.showMessageDialog(this, "Se han encontrado errores Sintacticos", "ERROR", JOptionPane.ERROR_MESSAGE);
-            }
-        } else {
-            System.out.println("error");
-        }
-    }//GEN-LAST:event_BtnAnalizarSintacActionPerformed
-
     private void RTablaLexicoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RTablaLexicoActionPerformed
         TablasGenerales Tabla = new TablasGenerales(this,false,1);
         Tabla.setVisible(true);
@@ -517,6 +538,42 @@ public class MenuInicial extends javax.swing.JFrame {
         TablasGenerales Tabla = new TablasGenerales(this,false,4);
         Tabla.setVisible(true);
     }//GEN-LAST:event_jMenuItem7ActionPerformed
+
+    private void CantidadDeFuncionesMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CantidadDeFuncionesMenuActionPerformed
+        TablasGenerales Tabla = new TablasGenerales(this,false,5);
+        Tabla.setVisible(true);
+    }//GEN-LAST:event_CantidadDeFuncionesMenuActionPerformed
+
+    private void CantidadDeLlamadasMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CantidadDeLlamadasMenuActionPerformed
+        TablasGenerales Tabla = new TablasGenerales(this,false,6);
+        Tabla.setVisible(true);
+    }//GEN-LAST:event_CantidadDeLlamadasMenuActionPerformed
+
+    private void TablaSintacticoBloqueMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TablaSintacticoBloqueMenuActionPerformed
+        TablasPorBloque Tabla = new TablasPorBloque(this,false,1);
+        Tabla.setVisible(true);
+    }//GEN-LAST:event_TablaSintacticoBloqueMenuActionPerformed
+
+    private void ParametrosMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ParametrosMenuActionPerformed
+        TablasGenerales Tabla = new TablasGenerales(this,false,7);
+        Tabla.setVisible(true);
+    }//GEN-LAST:event_ParametrosMenuActionPerformed
+
+    private void MenuCopiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuCopiarActionPerformed
+        copiarTextoAlPortapapeles(AreaDeTexto.getText());
+    }//GEN-LAST:event_MenuCopiarActionPerformed
+
+    private void MenuRehacerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuRehacerActionPerformed
+        if (undoManager.canUndo()) {
+                    undoManager.undo();
+                }
+    }//GEN-LAST:event_MenuRehacerActionPerformed
+
+    private void MenuDeshacerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuDeshacerActionPerformed
+         if (undoManager.canRedo()) {
+                    undoManager.redo();
+                }
+    }//GEN-LAST:event_MenuDeshacerActionPerformed
 
     //Metodos:
    
@@ -541,7 +598,8 @@ public class MenuInicial extends javax.swing.JFrame {
     private javax.swing.JTextArea AreaDeErrores;
     private javax.swing.JTextArea AreaDeTexto;
     private javax.swing.JButton BtnAnalizar;
-    private javax.swing.JButton BtnAnalizarSintac;
+    private javax.swing.JMenuItem CantidadDeFuncionesMenu;
+    private javax.swing.JMenuItem CantidadDeLlamadasMenu;
     private javax.swing.JMenuItem MenuAbrir;
     private javax.swing.JMenu MenuAcercaDe;
     private javax.swing.JMenu MenuArchivo;
@@ -555,19 +613,17 @@ public class MenuInicial extends javax.swing.JFrame {
     private javax.swing.JMenuItem MenuRehacer;
     private javax.swing.JMenuItem MenuSalir;
     private javax.swing.JMenuItem MenuSimbolos;
+    private javax.swing.JMenuItem ParametrosMenu;
     private javax.swing.JMenuItem RTablaLexico;
     private javax.swing.JScrollPane ScrollPanelTexto;
+    private javax.swing.JMenuItem TablaSintacticoBloqueMenu;
     private javax.swing.JInternalFrame jInternalFrame1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem2;
-    private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
-    private javax.swing.JMenuItem jMenuItem5;
-    private javax.swing.JMenuItem jMenuItem6;
     private javax.swing.JMenuItem jMenuItem7;
-    private javax.swing.JMenuItem jMenuItem8;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -593,18 +649,41 @@ public class MenuInicial extends javax.swing.JFrame {
     
     // Creación de método para poder guardar el archivo como...
     
-    public String guardarArchivo(File archivo, String documento){
-        //Aviso al usuario que el documento es guardado de manera exitosa
-        String mensaje = null;
-        try{
-            salida = new FileOutputStream(archivo);
-            byte[] bytxt = documento.getBytes();
-            salida.write(bytxt);
-            mensaje = "Archivo guardado correctamente";     
-        }catch(Exception e){
-            mensaje = "El archivo no pudo ser guardado, verifique...";
+     public static void guardarTextoEnArchivo(JTextArea textArea) {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Guardar Archivo");
+
+        int userSelection = fileChooser.showSaveDialog(null);
+
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File fileToSave = fileChooser.getSelectedFile();
+
+            try (PrintWriter writer = new PrintWriter(fileToSave)) {
+                writer.print(textArea.getText());
+            } catch (IOException e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Error al guardar el archivo.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
         }
-        return mensaje;
+    }
+    public static void copiarTextoAlPortapapeles(String texto) {
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        StringSelection selection = new StringSelection(texto);
+        clipboard.setContents(selection, null);
+        JOptionPane.showMessageDialog(null, "Texto copiado al portapapeles.", "Copiado", JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+        public static String obtenerTextoDesdePortapapeles() {
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        Transferable transferable = clipboard.getContents(null);
+        if (transferable != null && transferable.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+            try {
+                return (String) transferable.getTransferData(DataFlavor.stringFlavor);
+            } catch (UnsupportedFlavorException | IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
     }
 
 }

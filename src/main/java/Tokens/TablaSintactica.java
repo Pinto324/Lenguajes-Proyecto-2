@@ -24,6 +24,14 @@ public class TablaSintactica {
          /**
     *
     * Constructor de simbolos
+     * @param Simbolo
+     * @param Tipo
+     * @param Valor
+     * @param Descripcion
+     * @param fila
+     * @param bloque
+     * @param columna
+     * @param nivel
     */
     public TablaSintactica(String Simbolo, String Tipo ,String Valor, String Descripcion, int fila, int columna, int bloque, String nivel) {
         this.Simbolo = Simbolo;

@@ -10,7 +10,6 @@ import Analizador.ReportesSintacticos;
 import Tokens.Simbolos;
 import Tokens.TablaSintactica;
 import java.util.ArrayList;
-import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -37,6 +36,7 @@ public class TablasGenerales extends javax.swing.JDialog {
         //Para ponerlo en el centro y que el usuario no lo pueda hacer grande o pequeño
          this.setLocationRelativeTo(null);
          this.setResizable(false);
+         int Total;
         DefaultTableModel model = new DefaultTableModel();
         //switch que define el comportamiento de la tabla según el parametro X que se envie
         switch(X){
@@ -53,6 +53,7 @@ public class TablasGenerales extends javax.swing.JDialog {
                     model.addRow(fila);
                 }
                 Tabla.setModel(model);
+                Titulo.setText("Tabla de Simbolos Lexicos");
                 break;
                 //tabla Global Sintactica
             case 2:    //caso 2 para la tabla Global sintactica   
@@ -74,6 +75,7 @@ public class TablasGenerales extends javax.swing.JDialog {
                 Tabla.getColumnModel().getColumn(3).setPreferredWidth(50);
                 Tabla.getColumnModel().getColumn(4).setPreferredWidth(50);
                 Tabla.getColumnModel().getColumn(5).setPreferredWidth(50); 
+                Titulo.setText("Tabla de Simbolos Global");
                 break;
                 //caso 3 para errores lexicos
             case 3:
@@ -88,8 +90,9 @@ public class TablasGenerales extends javax.swing.JDialog {
                     model.addRow(fila);
                 }
                 Tabla.setModel(model);
+                Titulo.setText("Tabla de Errores Lexicos");
                 break;
-            case 4:       
+            case 4:      //Errores sintacticos 
                 reporteRecopiladoS = ReporteSintactico.getErrorRecopilado();
                 model.addColumn("Tipo");
                 model.addColumn("Descripción");
@@ -101,12 +104,80 @@ public class TablasGenerales extends javax.swing.JDialog {
                     model.addRow(fila);
                 }
                 Tabla.setModel(model);    
-                Tabla.getColumnModel().getColumn(1).setPreferredWidth(250);
+                Tabla.getColumnModel().getColumn(1).setPreferredWidth(300);
                 Tabla.getColumnModel().getColumn(0).setPreferredWidth(50);
                 Tabla.getColumnModel().getColumn(2).setPreferredWidth(50);
                 Tabla.getColumnModel().getColumn(3).setPreferredWidth(50);
                 Tabla.getColumnModel().getColumn(4).setPreferredWidth(50);   
-                break;    
+                Titulo.setText("Tabla de Errores Sintacticos");
+                break;
+            case 5: // Cantidad de funciones o métodos      
+                reporteRecopiladoS = ReporteSintactico.getreporteRecopilado();
+                Total= 1;
+                model.addColumn("No");
+                model.addColumn("Metodo");
+                model.addColumn("Línea");
+                model.addColumn("Columna");
+                model.addColumn("Bloque");
+                    for (TablaSintactica dato : reporteRecopiladoS) {
+                        if(dato.getnivel().equals("Funciones")){
+                            Object[] fila = {String.valueOf(Total), dato.getSimbolo(), dato.getfila(), dato.getcolumna(),dato.getbloque()};
+                            model.addRow(fila);
+                            Total++;
+                        }
+                }    
+                Tabla.setModel(model);    
+                Tabla.getColumnModel().getColumn(0).setPreferredWidth(20);
+                Tabla.getColumnModel().getColumn(1).setPreferredWidth(250);
+                Tabla.getColumnModel().getColumn(2).setPreferredWidth(50);
+                Tabla.getColumnModel().getColumn(3).setPreferredWidth(50);
+                Tabla.getColumnModel().getColumn(3).setPreferredWidth(50); 
+                Titulo.setText("Cantidad de funciones");
+                break;
+            case 6: // Cantidad de invocaciones de funciones o métodos      
+                reporteRecopiladoS = ReporteSintactico.getreporteRecopilado();
+                Total = 1;
+                model.addColumn("No");
+                model.addColumn("Metodo");
+                model.addColumn("Línea");
+                model.addColumn("Columna");
+                model.addColumn("Bloque");
+                    for (TablaSintactica dato : reporteRecopiladoS) {
+                        if(dato.getnivel().equals("Invocaciones")){
+                            Object[] fila = {String.valueOf(Total),dato.getSimbolo(), dato.getfila(), dato.getcolumna(),dato.getbloque()};
+                            model.addRow(fila);
+                            Total++;
+                        }
+                }    
+                Tabla.setModel(model);
+                Tabla.getColumnModel().getColumn(0).setPreferredWidth(20);
+                Tabla.getColumnModel().getColumn(1).setPreferredWidth(250);
+                Tabla.getColumnModel().getColumn(2).setPreferredWidth(50);
+                Tabla.getColumnModel().getColumn(3).setPreferredWidth(50);
+                Tabla.getColumnModel().getColumn(3).setPreferredWidth(50);   
+                Titulo.setText("Cantidad de Invocaciones de funciones");
+                break;
+            case 7: // Parametros de funciones    
+                reporteRecopiladoS = ReporteSintactico.getreporteRecopilado();
+                model.addColumn("Metodo");
+                model.addColumn("Parametros");
+                model.addColumn("Línea");
+                model.addColumn("Columna");
+                model.addColumn("Bloque");
+                    for (TablaSintactica dato : reporteRecopiladoS) {
+                        if(dato.getnivel().equals("Funciones")){
+                            Object[] fila = {dato.getSimbolo(),dato.getValor(), dato.getfila(), dato.getcolumna(),dato.getbloque()};
+                            model.addRow(fila);
+                        }
+                }    
+                Tabla.setModel(model);    
+                Tabla.getColumnModel().getColumn(0).setPreferredWidth(250);
+                Tabla.getColumnModel().getColumn(1).setPreferredWidth(250);
+                Tabla.getColumnModel().getColumn(2).setPreferredWidth(50);
+                Tabla.getColumnModel().getColumn(3).setPreferredWidth(50);  
+                Tabla.getColumnModel().getColumn(3).setPreferredWidth(50);
+                Titulo.setText("Parametros de funciones:");
+                break;  
             default:
                 break;
         }
@@ -131,7 +202,7 @@ public class TablasGenerales extends javax.swing.JDialog {
 
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
+        Titulo = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         Tabla = new javax.swing.JTable();
@@ -142,24 +213,24 @@ public class TablasGenerales extends javax.swing.JDialog {
 
         jPanel2.setBackground(new java.awt.Color(153, 153, 255));
 
-        jLabel1.setFont(new java.awt.Font("Trebuchet MS", 1, 24)); // NOI18N
-        jLabel1.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel1.setText("Tabla de simbolos");
+        Titulo.setFont(new java.awt.Font("Trebuchet MS", 1, 24)); // NOI18N
+        Titulo.setForeground(new java.awt.Color(255, 255, 255));
+        Titulo.setText("Reportes");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(188, 188, 188)
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 217, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(50, 50, 50)
+                .addComponent(Titulo, javax.swing.GroupLayout.PREFERRED_SIZE, 502, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGap(21, 21, 21)
-                .addComponent(jLabel1)
+                .addComponent(Titulo)
                 .addContainerGap(23, Short.MAX_VALUE))
         );
 
@@ -258,8 +329,8 @@ public class TablasGenerales extends javax.swing.JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable Tabla;
+    private javax.swing.JLabel Titulo;
     private javax.swing.JButton jButton1;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;

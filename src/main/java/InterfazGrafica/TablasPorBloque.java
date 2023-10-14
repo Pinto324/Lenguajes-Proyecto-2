@@ -9,64 +9,37 @@ import Analizador.AnalizadorLexico;
 import Analizador.ReportesSintacticos;
 import Tokens.Simbolos;
 import Tokens.TablaSintactica;
-import java.awt.BorderLayout;
 import java.util.ArrayList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
 import javax.swing.table.DefaultTableModel;
 
 /**
  *
  * @author branp
  */
-public class TablaDeSimbolosGlobal extends javax.swing.JFrame {
+public class TablasPorBloque extends javax.swing.JDialog {
+
     private ReportesSintacticos ReporteSintactico = new ReportesSintacticos();
     private AnalizadorLexico ReporteLexico = new AnalizadorLexico();
     private ArrayList<TablaSintactica> reporteRecopiladoS = new ArrayList<>();
     private ArrayList<Simbolos> reporteRecopiladoL = new ArrayList<>();
-    /** 
-     * Creates new form TablaDeTokens
+    private int x;
+    /**
+     * Creates new form TablasGenerales
+     * @param parent
+     * @param modal
      * @param X
      */
-    public TablaDeSimbolosGlobal(int X) {
+    public TablasPorBloque(java.awt.Frame parent, boolean modal, int X) {
+        super(parent, modal);
         initComponents();
+        x = X;
+        LlenarSelect();
         //Para ponerlo en el centro y que el usuario no lo pueda hacer grande o pequeño
          this.setLocationRelativeTo(null);
          this.setResizable(false);
-        DefaultTableModel model = new DefaultTableModel();
-        switch(X){
-            case 1:
-                reporteRecopiladoL = ReporteLexico.gettokenRecopilado();
-                model.addColumn("Token");
-                model.addColumn("Patrón ");
-                model.addColumn("Lexema");
-                model.addColumn("Fila");
-                model.addColumn("Columna");
-                    for (Simbolos dato : reporteRecopiladoL) {
-                    Object[] fila = {dato.getTipoToken(), dato.getPatron(), dato.getLexema(), dato.getFila(), dato.getColumna()};
-                    model.addRow(fila);
-                }
-                Tabla.setModel(model);
-            case 2:       
-        reporteRecopiladoS = ReporteSintactico.getreporteRecopilado();
-        model.addColumn("Símbolo");
-        model.addColumn("Tipo");
-        model.addColumn("Valor");
-        model.addColumn("Línea");
-        model.addColumn("Columna");
-        model.addColumn("Bloque");
-        Tabla = new JTable(model);
-            for (TablaSintactica dato : reporteRecopiladoS) {
-            Object[] fila = {dato.getSimbolo(), dato.getTipo(), dato.getValor(), dato.getfila(), dato.getcolumna(),dato.getbloque()};
-            model.addRow(fila);
-        }
-                break;
-            default:
-                break;
-        }
+        //switch que define el comportamiento de la tabla según el parametro X que se envie
         Tabla.setEnabled(false);
+        Tabla.setVisible(false);
     }
 
     /**
@@ -80,36 +53,39 @@ public class TablaDeSimbolosGlobal extends javax.swing.JFrame {
 
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
+        Titulo = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         Tabla = new javax.swing.JTable();
         jPanel4 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
+        SelectorDeBloque = new javax.swing.JComboBox<>();
+        BtnBuscar = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         jPanel2.setBackground(new java.awt.Color(153, 153, 255));
 
-        jLabel1.setFont(new java.awt.Font("Trebuchet MS", 1, 24)); // NOI18N
-        jLabel1.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel1.setText("Tabla de simbolos");
+        Titulo.setFont(new java.awt.Font("Trebuchet MS", 1, 24)); // NOI18N
+        Titulo.setForeground(new java.awt.Color(255, 255, 255));
+        Titulo.setText("Tabla de simbolos por bloque");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(188, 188, 188)
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 217, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(137, 137, 137)
+                .addComponent(Titulo)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(21, 21, 21)
-                .addComponent(jLabel1)
-                .addContainerGap(23, Short.MAX_VALUE))
+                .addGap(20, 20, 20)
+                .addComponent(Titulo)
+                .addContainerGap(24, Short.MAX_VALUE))
         );
 
         Tabla.setModel(new javax.swing.table.DefaultTableModel(
@@ -147,20 +123,39 @@ public class TablaDeSimbolosGlobal extends javax.swing.JFrame {
             }
         });
 
+        BtnBuscar.setText("Buscar");
+        BtnBuscar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtnBuscarActionPerformed(evt);
+            }
+        });
+
+        jLabel1.setText("Bloque:");
+
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addGap(261, 261, 261)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
+                .addGap(25, 25, 25)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(SelectorDeBloque, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(BtnBuscar)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jButton1)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(29, 29, 29))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jButton1)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton1)
+                    .addComponent(SelectorDeBloque, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(BtnBuscar)
+                    .addComponent(jLabel1))
                 .addContainerGap(17, Short.MAX_VALUE))
         );
 
@@ -204,9 +199,48 @@ public class TablaDeSimbolosGlobal extends javax.swing.JFrame {
         this.dispose();
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    
+    private void BtnBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnBuscarActionPerformed
+        reporteRecopiladoS = ReporteSintactico.getreporteRecopilado();
+        String elementoSeleccionado = (String) SelectorDeBloque.getSelectedItem();
+        int bloque = Integer.valueOf(elementoSeleccionado);
+        DefaultTableModel model = new DefaultTableModel();
+        switch(x){
+            case 1:
+                reporteRecopiladoS = ReporteSintactico.getreporteRecopilado();
+                model.addColumn("Símbolo");
+                model.addColumn("Tipo");
+                model.addColumn("Valor");
+                model.addColumn("Línea");
+                model.addColumn("Columna");
+                model.addColumn("Bloque");
+                    for (TablaSintactica dato : reporteRecopiladoS) {
+                        if(dato.getbloque()==bloque){
+                            Object[] fila = {dato.getSimbolo(), dato.getTipo(), dato.getValor(), dato.getfila(), dato.getcolumna(),dato.getbloque()};
+                            model.addRow(fila);
+                        } 
+                    }
+                Tabla.setModel(model);
+                Tabla.getColumnModel().getColumn(2).setPreferredWidth(250);
+                Tabla.getColumnModel().getColumn(0).setPreferredWidth(70);
+                Tabla.getColumnModel().getColumn(1).setPreferredWidth(70);
+                Tabla.getColumnModel().getColumn(3).setPreferredWidth(50);
+                Tabla.getColumnModel().getColumn(4).setPreferredWidth(50);
+                Tabla.getColumnModel().getColumn(5).setPreferredWidth(50);
+                Tabla.setVisible(true);
+                Titulo.setText("Tabla de simbolos del bloque "+bloque);
+                break;
+            case 2:
+                
+                break;
+        }
+    }//GEN-LAST:event_BtnBuscarActionPerformed
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton BtnBuscar;
+    private javax.swing.JComboBox<String> SelectorDeBloque;
     private javax.swing.JTable Tabla;
+    private javax.swing.JLabel Titulo;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
@@ -215,4 +249,10 @@ public class TablaDeSimbolosGlobal extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
+    public void LlenarSelect(){
+        reporteRecopiladoS = ReporteSintactico.getreporteRecopilado();
+        for (int i = 1; i < reporteRecopiladoS.get(reporteRecopiladoS.size()-1).getbloque(); i++) {
+            SelectorDeBloque.addItem(String.valueOf(i));
+        }
+    }
 }

@@ -95,6 +95,7 @@ public class AnalizadorSintactico {
                         boolean seCerroLaCadena = false;
                         boolean esTernario = false;
                         boolean multiplesValores = false;
+                        boolean CerrarCiclo = true;
                         String Tipo = elemento.getPatron();
                         String Cad = "";
                         if(elemento.getPatron().equals("booleanas")){
@@ -109,9 +110,10 @@ public class AnalizadorSintactico {
                                 posicion++;
                                 elemento = Tokens.get(posicion);
                             if((elemento.getTipoToken().equals("Aritméticos")||elemento.getTipoToken().equals("Comparación"))&& Fila == elemento.getFila()){
-                                while (posicion < Tokens.size() && Fila == elemento.getFila()) {
+                                while (posicion < Tokens.size() && Fila == elemento.getFila() && CerrarCiclo) {
                                     elemento = Tokens.get(posicion);
                                     if(Fila != elemento.getFila()){}else{
+                                        posicion++;
                                         if(elemento.getPatron().equals("Entero")||elemento.getPatron().equals("Decimal")||elemento.getTipoToken().equals("ID")){
                                             if(elemento.getTipoToken().equals("ID")){ContieneID = true;}
                                             Cad += " "+elemento.getLexema();
@@ -122,11 +124,13 @@ public class AnalizadorSintactico {
                                         }else if(elemento.getTipoToken().equals("Comparación")){
                                             Asignacion = true;
                                             ExpresionCorrecta = false;
+                                        }else if(elemento.getTipoToken().equals("Comentario")){
+                                            posicion++;
                                         }else{
                                             huboError = true;
                                             Reportes.reporteErrorAsignacion(2,elemento.getFila() , elemento.getColumna(),bloque,"Asignación");
-                                            CambiarDeLinea(Fila);
-                                            elemento = Tokens.get(posicion);
+                                            posicion++;
+                                            CerrarCiclo = false;
                                         }
                                     }
                                 } 
@@ -155,7 +159,7 @@ public class AnalizadorSintactico {
                                 multiplesValores=true;
                                 if(elemento.getPatron().equals("Cadena")){
                                     esCadena = true;
-                                }else{
+                                }else if(elemento.getPatron().equals("Entero")||elemento.getPatron().equals("Decimal")){
                                     esOtro = true;
                                 }
                                 if(esTernario){
@@ -214,7 +218,7 @@ public class AnalizadorSintactico {
                         }else if(seCerroLaCadena){
                             elemento = Tokens.get(posicion-1);
                             if(esTernario){
-                                Reportes.reporteAsignacion(Simbolo,Tipo, "Undefined", elemento.getFila(),elemento.getColumna(),bloque,"Ternario");
+                                Reportes.reporteAsignacion(Simbolo,"Ternario", "Undefined", elemento.getFila(),elemento.getColumna(),bloque,"Ternario");
                             }else if(esCadena){
                                 Reportes.reporteAsignacion(Simbolo,Tipo, Cadena, elemento.getFila(),elemento.getColumna(),bloque,"Asignación");
                             }else if(multiplesValores){
@@ -806,6 +810,7 @@ public class AnalizadorSintactico {
                         break;    
                     default:
                         // Código por defecto si la opción no coincide con ningún caso
+                        posicion++;
                         System.out.println("Opción no válida");
                         break;
                 }
@@ -831,6 +836,7 @@ public class AnalizadorSintactico {
     public void ResetBloques(){
         bloque = 1;
         Reportes = new ReportesSintacticos();
+        Reportes.ResetArreglos();
         calc = new Calculadora();
         bloque = 1;
         posicion = 0;

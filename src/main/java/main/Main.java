@@ -6,7 +6,6 @@
 package main;
 
 import InterfazGrafica.MenuInicial;
-import InterfazGrafica.Principal;
 
 /**
  *
