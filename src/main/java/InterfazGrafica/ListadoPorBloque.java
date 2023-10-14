@@ -10,7 +10,7 @@ import Analizador.ReportesSintacticos;
 import Tokens.Simbolos;
 import Tokens.TablaSintactica;
 import java.util.ArrayList;
-import javax.swing.table.DefaultTableModel;
+import java.util.HashSet;
 
 /**
  *
@@ -22,24 +22,19 @@ public class ListadoPorBloque extends javax.swing.JDialog {
     private AnalizadorLexico ReporteLexico = new AnalizadorLexico();
     private ArrayList<TablaSintactica> reporteRecopiladoS = new ArrayList<>();
     private ArrayList<Simbolos> reporteRecopiladoL = new ArrayList<>();
-    private int x;
     /**
      * Creates new form TablasGenerales
      * @param parent
      * @param modal
-     * @param X
      */
-    public ListadoPorBloque(java.awt.Frame parent, boolean modal, int X) {
+    public ListadoPorBloque(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
-        x = X;
         LlenarSelect();
         //Para ponerlo en el centro y que el usuario no lo pueda hacer grande o pequeño
          this.setLocationRelativeTo(null);
          this.setResizable(false);
         //switch que define el comportamiento de la tabla según el parametro X que se envie
-        Tabla.setEnabled(false);
-        Tabla.setVisible(false);
     }
 
     /**
@@ -55,8 +50,8 @@ public class ListadoPorBloque extends javax.swing.JDialog {
         jPanel2 = new javax.swing.JPanel();
         Titulo = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        Tabla = new javax.swing.JTable();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        AreaDeTexto = new javax.swing.JTextArea();
         jPanel4 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
         SelectorDeBloque = new javax.swing.JComboBox<>();
@@ -69,7 +64,7 @@ public class ListadoPorBloque extends javax.swing.JDialog {
 
         Titulo.setFont(new java.awt.Font("Trebuchet MS", 1, 24)); // NOI18N
         Titulo.setForeground(new java.awt.Color(255, 255, 255));
-        Titulo.setText("Tabla de simbolos por bloque");
+        Titulo.setText("Listado de Código por bloque");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -78,7 +73,7 @@ public class ListadoPorBloque extends javax.swing.JDialog {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGap(137, 137, 137)
                 .addComponent(Titulo)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(150, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -88,30 +83,22 @@ public class ListadoPorBloque extends javax.swing.JDialog {
                 .addContainerGap(24, Short.MAX_VALUE))
         );
 
-        Tabla.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
-            }
-        ));
-        jScrollPane1.setViewportView(Tabla);
+        AreaDeTexto.setEditable(false);
+        AreaDeTexto.setColumns(20);
+        AreaDeTexto.setRows(5);
+        jScrollPane2.setViewportView(AreaDeTexto);
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 617, Short.MAX_VALUE)
+            .addComponent(jScrollPane2)
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 341, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addContainerGap()
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE))
         );
 
         jPanel4.setBackground(new java.awt.Color(153, 153, 255));
@@ -145,7 +132,7 @@ public class ListadoPorBloque extends javax.swing.JDialog {
                 .addComponent(BtnBuscar)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jButton1)
-                .addGap(29, 29, 29))
+                .addGap(73, 73, 73))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -183,7 +170,7 @@ public class ListadoPorBloque extends javax.swing.JDialog {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addGap(0, 2, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -201,45 +188,41 @@ public class ListadoPorBloque extends javax.swing.JDialog {
 
     private void BtnBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnBuscarActionPerformed
         reporteRecopiladoS = ReporteSintactico.getreporteRecopilado();
+        ArrayList<Integer> Filas = new ArrayList<>();
         String elementoSeleccionado = (String) SelectorDeBloque.getSelectedItem();
         int bloque = Integer.valueOf(elementoSeleccionado);
-        DefaultTableModel model = new DefaultTableModel();
-        switch(x){
-            case 1:
-                reporteRecopiladoS = ReporteSintactico.getreporteRecopilado();
-                model.addColumn("Símbolo");
-                model.addColumn("Tipo");
-                model.addColumn("Valor");
-                model.addColumn("Línea");
-                model.addColumn("Columna");
-                model.addColumn("Bloque");
+        String Cadena = "";
+        int valorAnterior = -1;
+        reporteRecopiladoS = ReporteSintactico.getreporteRecopilado();
                     for (TablaSintactica dato : reporteRecopiladoS) {
                         if(dato.getbloque()==bloque){
-                            Object[] fila = {dato.getSimbolo(), dato.getTipo(), dato.getValor(), dato.getfila(), dato.getcolumna(),dato.getbloque()};
-                            model.addRow(fila);
+                            Filas.add(dato.getfila());
                         } 
                     }
-                Tabla.setModel(model);
-                Tabla.getColumnModel().getColumn(2).setPreferredWidth(250);
-                Tabla.getColumnModel().getColumn(0).setPreferredWidth(70);
-                Tabla.getColumnModel().getColumn(1).setPreferredWidth(70);
-                Tabla.getColumnModel().getColumn(3).setPreferredWidth(50);
-                Tabla.getColumnModel().getColumn(4).setPreferredWidth(50);
-                Tabla.getColumnModel().getColumn(5).setPreferredWidth(50);
-                Tabla.setVisible(true);
-                Titulo.setText("Tabla de simbolos del bloque "+bloque);
-                break;
-            case 2:
-                
-                break;
-        }
+                    HashSet<Integer> set = new HashSet<>(Filas);
+                    Filas.clear();
+                    Filas.addAll(set);
+                    reporteRecopiladoL = ReporteLexico.gettokenRecopilado();
+                    for (Simbolos datos : reporteRecopiladoL) {
+                        int parametro = datos.getFila();
+                        if(Filas.contains(datos.getFila())){
+                                if (valorAnterior != -1 && parametro > valorAnterior) {
+                                    Cadena += "\n"+datos.getLexema();
+                                }else{
+                                    Cadena += " "+datos.getLexema();
+                                }
+                                valorAnterior = parametro;
+                        } 
+                    }
+                    AreaDeTexto.setText(Cadena);
+                Titulo.setText("Listado de instrucciones bloque "+bloque);
     }//GEN-LAST:event_BtnBuscarActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextArea AreaDeTexto;
     private javax.swing.JButton BtnBuscar;
     private javax.swing.JComboBox<String> SelectorDeBloque;
-    private javax.swing.JTable Tabla;
     private javax.swing.JLabel Titulo;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
@@ -247,7 +230,7 @@ public class ListadoPorBloque extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
-    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     // End of variables declaration//GEN-END:variables
     public void LlenarSelect(){
         reporteRecopiladoS = ReporteSintactico.getreporteRecopilado();

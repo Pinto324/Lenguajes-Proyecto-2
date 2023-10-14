@@ -101,7 +101,6 @@ public class MenuInicial extends javax.swing.JFrame {
         MenuArchivo = new javax.swing.JMenu();
         MenuAbrir = new javax.swing.JMenuItem();
         MenuGuardar = new javax.swing.JMenuItem();
-        MenuGuardarComo = new javax.swing.JMenuItem();
         MenuSalir = new javax.swing.JMenuItem();
         MenuGenerar = new javax.swing.JMenu();
         MenuSimbolos = new javax.swing.JMenuItem();
@@ -283,9 +282,6 @@ public class MenuInicial extends javax.swing.JFrame {
         });
         MenuArchivo.add(MenuGuardar);
 
-        MenuGuardarComo.setText("Guardar Como");
-        MenuArchivo.add(MenuGuardarComo);
-
         MenuSalir.setText("Salir");
         MenuSalir.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -332,6 +328,11 @@ public class MenuInicial extends javax.swing.JFrame {
         MenuGenerar.add(TablaSintacticoBloqueMenu);
 
         jMenuItem4.setText("Instrucciones por bloque");
+        jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem4ActionPerformed(evt);
+            }
+        });
         MenuGenerar.add(jMenuItem4);
 
         CantidadDeFuncionesMenu.setText("Cantidad De Funciones");
@@ -507,15 +508,15 @@ public class MenuInicial extends javax.swing.JFrame {
             AreaDeErrores.setText("");
             if(!(AnalizadorLexico.getErroresRecopilado().isEmpty())){
                 //Mostramos ventana de reportes
-                Cadena += "Se han encontrado errores Léxicos en el aŕea de texto. Da click en el boton de reporte de errores para más informacion";
+                Cadena += "Se han encontrado errores Léxicos en el aŕea de texto.";
             } else {      
-                Cadena +="No hay errores uwuXDXD";
+                Cadena +="No hay errores";
             }
             if(!(ReportesSintacticos.getErrorRecopilado().isEmpty())){
                 //Mostramos ventana de reportes
-                Cadena += "\nSe han encontrado errores Sintacticos en el aŕea de texto. Da click en el boton de reporte de errores para más informacion";
+                Cadena += "\nSe han encontrado errores Sintacticos en el aŕea de texto.";
             } else {      
-                Cadena +="\nNo hay errores Sintacticos uwuXDXD";
+                Cadena +="\nNo hay errores Sintacticos";
             }
             AreaDeErrores.setText(Cadena);
             MenuSimbolos.setEnabled(true);
@@ -575,6 +576,11 @@ public class MenuInicial extends javax.swing.JFrame {
                 }
     }//GEN-LAST:event_MenuDeshacerActionPerformed
 
+    private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
+        ListadoPorBloque Menu = new ListadoPorBloque(this, false);
+        Menu.setVisible(true);
+    }//GEN-LAST:event_jMenuItem4ActionPerformed
+
     //Metodos:
    
     public void escritorArchivo(File archivo, String texto){
@@ -608,7 +614,6 @@ public class MenuInicial extends javax.swing.JFrame {
     private javax.swing.JMenu MenuEdicion;
     private javax.swing.JMenu MenuGenerar;
     private javax.swing.JMenuItem MenuGuardar;
-    private javax.swing.JMenuItem MenuGuardarComo;
     private javax.swing.JMenuItem MenuPegar;
     private javax.swing.JMenuItem MenuRehacer;
     private javax.swing.JMenuItem MenuSalir;
