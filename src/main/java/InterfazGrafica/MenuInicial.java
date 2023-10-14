@@ -6,6 +6,8 @@
 package InterfazGrafica;
 
 import Analizador.AnalizadorLexico;
+import Analizador.AnalizadorSintactico;
+import Analizador.ReportesSintacticos;
 import Utilidades.Atajos;
 import Utilidades.ManejadorDeArchivos;
 import Utilidades.ManejadorDeTexto;
@@ -39,7 +41,9 @@ public class MenuInicial extends javax.swing.JFrame {
     private ConcurrentHashMap<Integer, ManejadorDeTexto> EstadoPrevio;
     private ConcurrentHashMap<Integer, ManejadorDeTexto> EstadoActual;
     public String texto="";
-    private AnalizadorLexico AnalizadorLexico = new AnalizadorLexico();
+    private final AnalizadorLexico AnalizadorLexico = new AnalizadorLexico();
+    private final AnalizadorSintactico AnalizadorSintactico = new AnalizadorSintactico();
+    private final ReportesSintacticos ReportesSintacticos = new ReportesSintacticos();
     private Action[] actions = { null, null, new DefaultEditorKit.CopyAction(), new DefaultEditorKit.PasteAction() };
     private boolean Llave = true;
     private ManejadorDeArchivos MA;
@@ -316,6 +320,11 @@ public class MenuInicial extends javax.swing.JFrame {
         MenuGenerar.add(RTablaLexico);
 
         jMenuItem2.setText("Tabla Sintactico global");
+        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem2ActionPerformed(evt);
+            }
+        });
         MenuGenerar.add(jMenuItem2);
 
         jMenuItem3.setText("Tabla Sintactico Bloque");
@@ -331,6 +340,11 @@ public class MenuInicial extends javax.swing.JFrame {
         MenuGenerar.add(jMenuItem6);
 
         jMenuItem7.setText("Errores Sintacticos");
+        jMenuItem7.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem7ActionPerformed(evt);
+            }
+        });
         MenuGenerar.add(jMenuItem7);
 
         jMenuItem8.setText("Parametros");
@@ -449,20 +463,27 @@ public class MenuInicial extends javax.swing.JFrame {
 
     private void BtnAnalizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnAnalizarActionPerformed
         if(AreaDeTexto.getText().isEmpty()!=true){
+            String Cadena = " ";
             AreaDeErrores.setText("");
             AnalizadorLexico.resetVariable();
             AnalizadorLexico.analisisLexico(AreaDeTexto.getText());
+            AnalizadorSintactico.ResetBloques();
+            AnalizadorSintactico.bloques();
+            AreaDeErrores.setText("");
             if(!(AnalizadorLexico.getErroresRecopilado().isEmpty())){
                 //Mostramos ventana de reportes
-                BtnAnalizarSintac.setVisible(false);
-                AreaDeErrores.setText("");
-                AreaDeErrores.setText("Se han encontrado errores Léxicos en el aŕea de texto. Da click en el boton de reporte de errores para más informacion");
-                MenuSimbolos.setEnabled(true);
+                Cadena += "Se han encontrado errores Léxicos en el aŕea de texto. Da click en el boton de reporte de errores para más informacion";
             } else {      
-                AreaDeErrores.setText("");
-                AreaDeErrores.setText("No hay errores uwuXDXD");
-                BtnAnalizarSintac.setVisible(true);
+                Cadena +="No hay errores uwuXDXD";
             }
+            if(!(ReportesSintacticos.getErrorRecopilado().isEmpty())){
+                //Mostramos ventana de reportes
+                Cadena += "\nSe han encontrado errores Sintacticos en el aŕea de texto. Da click en el boton de reporte de errores para más informacion";
+            } else {      
+                Cadena +="\nNo hay errores Sintacticos uwuXDXD";
+            }
+            AreaDeErrores.setText(Cadena);
+            MenuSimbolos.setEnabled(true);
         } else {
             JOptionPane.showMessageDialog(this,"No hay texto dentro del area para poder realizar un analisis Léxico", "ERROR", JOptionPane.ERROR_MESSAGE);
         }
@@ -486,6 +507,16 @@ public class MenuInicial extends javax.swing.JFrame {
         TablasGenerales Tabla = new TablasGenerales(this,false,1);
         Tabla.setVisible(true);
     }//GEN-LAST:event_RTablaLexicoActionPerformed
+
+    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
+        TablasGenerales Tabla = new TablasGenerales(this,false,2);
+        Tabla.setVisible(true);
+    }//GEN-LAST:event_jMenuItem2ActionPerformed
+
+    private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem7ActionPerformed
+        TablasGenerales Tabla = new TablasGenerales(this,false,4);
+        Tabla.setVisible(true);
+    }//GEN-LAST:event_jMenuItem7ActionPerformed
 
     //Metodos:
    

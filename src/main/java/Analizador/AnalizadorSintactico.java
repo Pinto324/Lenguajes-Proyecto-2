@@ -24,30 +24,32 @@ public class AnalizadorSintactico {
     }
     public void bloques(){
         boolean AumentarBloque = false;
+        int Fila;
         while (posicion < Tokens.size()) {
             Simbolos elemento = Tokens.get(posicion);
-            int Fila = elemento.getFila();
+            Fila = elemento.getFila();
             if(elemento.getInicio()==0){
                 ArrayList<TablaSintactica> ListaDeReportes = Reportes.getreporteRecopilado();
+                ArrayList<TablaSintactica> ElementosEnElBloque = new ArrayList<>();
                 for (TablaSintactica objeto : ListaDeReportes) {
                     if (objeto.getbloque() == bloque) {
-                        ListaDeReportes.add(objeto);
+                        ElementosEnElBloque.add(objeto);
                     }
                 //condición si el bloque tiene contenido adentro aqui se hace la distinción para saber que hay que hacer según su calsificación
                 } 
                 //Es nuevo:
-                if(ListaDeReportes.isEmpty()){
-                    analisisSintactico();
+                if(ElementosEnElBloque.isEmpty()){
+                    analisisSintactico(Fila);
                 //si ya existen elementos en ese bloque comprueba si un nuevo elemento pertenece y si no crea un nuevo bloque
                 }else{
                     //comprobar si es if
-                    if(ListaDeReportes.get(0).getSimbolo().equals("if")){
+                    if(ElementosEnElBloque.get(0).getSimbolo().equals("if")){
                         if(elemento.getLexema().equals("elif")||elemento.getLexema().equals("else")){
                             AumentarBloque = false;
                         }else{
                             AumentarBloque = true;
                         }   
-                    }else if(ListaDeReportes.get(0).getSimbolo().equals("for")){
+                    }else if(ElementosEnElBloque.get(0).getSimbolo().equals("for")){
                         if(elemento.getLexema().equals("else")){
                             AumentarBloque = false;
                         }else{
@@ -60,18 +62,17 @@ public class AnalizadorSintactico {
                     if(AumentarBloque){
                         bloque++;
                     }
-                    analisisSintactico();
+                    analisisSintactico(Fila);
                 }
                 //aqui va el comportamiento si es contenido de un bloque:
             }else{
-                analisisSintactico();
+                analisisSintactico(Fila);
             }
         }
     }
 
-    public void analisisSintactico(){
+    public void analisisSintactico(int Fila){
             Simbolos elemento = Tokens.get(posicion);
-            int Fila = elemento.getFila();
             String Simbolo = elemento.getLexema();
             //condición si el elemento es ID: Declaración	|ID ASIGNACION EXPRESION | ID ARIMETICO/ASIGNACION EXPRESION
             if(elemento.getTipoToken().equals("ID")){    
@@ -90,60 +91,73 @@ public class AnalizadorSintactico {
                         boolean huboError = false;
                         boolean seCerroLaCadena = false;
                         boolean esTernario = false;
+                        boolean multiplesValores = false;
                         String Tipo = elemento.getPatron();
-                        while (posicion < Tokens.size() && Fila == elemento.getFila()) { 
-                            if(elemento.getPatron().equals("Cadena")){
-                                esCadena = true;
-                            }else{
-                                esOtro = true;
-                            }
-                            if(esTernario){
-                                Cadena += " "+elemento.getLexema();                             
-                                //se entra a esta condición si se combinan tipos cadena con cualquier otro, lo cual haría un error de sintaxis
-                            }else if((esCadena && esOtro)||(!esCadena && !esOtro)){
-                                    Reportes.reporteErrorAsignacion(1,elemento.getFila() , elemento.getColumna(),bloque,"Asignación");
-                                    huboError = true;
-                                    //bucle para seguir en la siguiente linea
-                                    CambiarDeLinea(Fila);
-                                    break;
-                            }else{
-                                if(elemento.getLexema().equals("**")){
-                                    Cadena += " ^";
+                        if(elemento.getPatron().equals("booleanas")){
+                            huboError = true;
+                            Reportes.reporteAsignacion(Simbolo,Tipo, elemento.getLexema(), elemento.getFila(),elemento.getColumna(),bloque,"Asignación");
+                            posicion++;
+                        }else{
+                            while (posicion < Tokens.size() && Fila == elemento.getFila()) {                           
+                            elemento = Tokens.get(posicion);
+                            if(Fila != elemento.getFila()){}else{
+                                multiplesValores=true;
+                                if(elemento.getPatron().equals("Cadena")){
+                                    esCadena = true;
                                 }else{
-                                    Cadena += " "+elemento.getLexema();
+                                    esOtro = true;
                                 }
-                                if(elemento.getTipoToken().equals("Aritméticos")){
-                                    seCerroLaCadena = false;
-                                }else if(elemento.getTipoToken().equals("Constantes")){
-                                    seCerroLaCadena = true;
-                                }else if(elemento.getTipoToken().equals("Palabras clave")||elemento.getTipoToken().equals("Comparación")){
-                                    esTernario = true;
-                                    seCerroLaCadena = false;
-                                }else{
-                                    if(!esTernario){
-                                        Reportes.reporteErrorAsignacion(2,elemento.getFila() , elemento.getColumna(),bloque,"Asignación");
+                                if(esTernario){
+                                    Cadena += " "+elemento.getLexema();                             
+                                    //se entra a esta condición si se combinan tipos cadena con cualquier otro, lo cual haría un error de sintaxis
+                                }else if((esCadena && esOtro)||(!esCadena && !esOtro)){
+                                        Reportes.reporteErrorAsignacion(1,elemento.getFila() , elemento.getColumna(),bloque,"Asignación");
                                         huboError = true;
-                                    //bucle para seguir en la siguiente linea
+                                        //bucle para seguir en la siguiente linea
                                         CambiarDeLinea(Fila);
                                         break;
+                                }else{
+                                    if(elemento.getLexema().equals("**")){
+                                        Cadena += " ^";
                                     }else{
+                                        Cadena += " "+elemento.getLexema();
+                                    }
+                                    if(elemento.getTipoToken().equals("Aritméticos")){
+                                        seCerroLaCadena = false;
+                                    }else if(elemento.getTipoToken().equals("Constantes")){
+                                        seCerroLaCadena = true;
+                                    }else if(elemento.getTipoToken().equals("Palabras clave")||elemento.getTipoToken().equals("Comparación")){
+                                        esTernario = true;
+                                        seCerroLaCadena = false;
+                                    }else{
+                                        if(!esTernario){
+                                            Reportes.reporteErrorAsignacion(2,elemento.getFila() , elemento.getColumna(),bloque,"Asignación");
+                                            huboError = true;
+                                        //bucle para seguir en la siguiente linea
+                                            CambiarDeLinea(Fila);
+                                            break;
+                                        }else{
 
+                                        }
                                     }
                                 }
+                                posicion++;
+                            } 
                             }
-                            posicion++;
-                            elemento = Tokens.get(posicion);
-                        }
+                        } 
                         //condicion final, si hubo un error anterior no hace nada, si es error de tipo 3 y si no crea el reporte
                         if(huboError){
 
                         }else if(seCerroLaCadena){
+                            elemento = Tokens.get(posicion-1);
                             if(esTernario){
                                 Reportes.reporteAsignacion(Simbolo,Tipo, "Undefined", elemento.getFila(),elemento.getColumna(),bloque,"Ternario");
                             }else if(esCadena){
                                 Reportes.reporteAsignacion(Simbolo,Tipo, Cadena, elemento.getFila(),elemento.getColumna(),bloque,"Asignación");
-                            }else{
+                            }else if(multiplesValores){
                                 Reportes.reporteAsignacion(Simbolo,Tipo, Double.toString(calc.evaluarExpresion(Cadena)), elemento.getFila(),elemento.getColumna(),bloque,"Asignación");
+                            }else{
+                                Reportes.reporteAsignacion(Simbolo,Tipo, Cadena, elemento.getFila(),elemento.getColumna(),bloque,"Asignación");
                             }
                        
                         }else{
@@ -155,11 +169,15 @@ public class AnalizadorSintactico {
                         //|Otros(ID|Constantes|Otros)* 
                     }else if(elemento.getTipoToken().equals("Otros")){
                         String Abrio = elemento.getPatron();
+                        posicion++;
                         boolean cerro = false;
                         while (posicion < Tokens.size() && Fila == elemento.getFila()) {
+                            elemento = Tokens.get(posicion);
+                            if(Fila != elemento.getFila()){
+                                break;
+                            }
                             Cadena += elemento.getLexema();
                             posicion++;
-                            elemento = Tokens.get(posicion);
                             if(elemento.getPatron().equals(Abrio)){
                                 cerro = true;
                             }
@@ -196,10 +214,11 @@ public class AnalizadorSintactico {
                 }else if(elemento.getLexema().equals("(")){
                     boolean cerro = false;
                     int PosCerrado = 0;
+                    posicion++;
                         //bucle para seguir en la siguiente linea
                         while (posicion < Tokens.size() && Fila == elemento.getFila()) {   
-                            posicion++;
                             elemento = Tokens.get(posicion);
+                            posicion++;
                             if(elemento.getLexema().equals(")")){
                                 cerro = true;
                                 PosCerrado = posicion;
@@ -213,10 +232,11 @@ public class AnalizadorSintactico {
                         }   
                     //condición para invocaciones multiples:
                 }else if(elemento.getLexema().equals(",")){
+                    posicion++;
                     boolean coma = false;
                     while (posicion < Tokens.size() && Fila == elemento.getFila()) {
-                            posicion++;
-                            elemento = Tokens.get(posicion);
+                        elemento = Tokens.get(posicion);    
+                        posicion++;
                             if(elemento.getLexema().equals(",")){
                                 coma = false;
                             }else{
@@ -267,7 +287,7 @@ public class AnalizadorSintactico {
                                 CambiarDeLinea(Fila);
                             }
                         //| (Entero|Double|ID) Comparación (Entero|Double|ID) || ID
-                        }else if(elemento.getTipoToken().equals("ID")||elemento.getPatron().equals("Constantes")){
+                        }else if(elemento.getTipoToken().equals("ID")||elemento.getTipoToken().equals("Constantes")){
                             boolean HayId = false;
                             //condición para saber si entro con un id
                             if(elemento.getTipoToken().equals("ID")){
@@ -276,14 +296,14 @@ public class AnalizadorSintactico {
                             posicion++;
                             elemento = Tokens.get(posicion);
                             //condición para saber si es por medio de comparación el boolean
-                            if(elemento.getPatron().equals("Comparación")||elemento.getTipoToken().equals("Palabras clave")){
+                            if(elemento.getTipoToken().equals("Comparación")||elemento.getTipoToken().equals("Palabras clave")){
                                 posicion++;
                                 elemento = Tokens.get(posicion);
                                 //aqui se recibe el siguiente valor ya sea constante o ID
-                                if(elemento.getPatron().equals("ID")||elemento.getPatron().equals("Constantes")){
+                                if(elemento.getTipoToken().equals("ID")||elemento.getTipoToken().equals("Constantes")){
                                     posicion++;
                                     elemento = Tokens.get(posicion);
-                                    if(elemento.getPatron().equals("ID")){
+                                    if(elemento.getTipoToken().equals("ID")){
                                             HayId = true;
                                     }
                                     //se verifica que se cierre la sentencia con :
@@ -324,6 +344,28 @@ public class AnalizadorSintactico {
                                 Reportes.reporteErrorCondicional(4,elemento.getFila(),elemento.getColumna(),bloque,"Condicional");
                                 CambiarDeLinea(Fila);
                             }
+                        }else if(elemento.getTipoToken().equals("Lógicos")){
+                            posicion++;
+                            elemento = Tokens.get(posicion);          
+                                //aqui se recibe el siguiente valor ya sea constante o ID
+                                if(elemento.getTipoToken().equals("ID")||elemento.getTipoToken().equals("Constantes")){
+                                    posicion++;
+                                    elemento = Tokens.get(posicion);
+                                    //se verifica que se cierre la sentencia con :
+                                    if(elemento.getLexema().equals(":")){
+                                        Reportes.reporteCondicional(Simbolo,Tipo,"Undefined", elemento.getFila(),elemento.getColumna(),bloque,"Condicional");
+                                        posicion++;
+                                    }else{
+                                        Reportes.reporteErrorCondicional(2,elemento.getFila(),elemento.getColumna(),bloque,"Condicional");
+                                        CambiarDeLinea(Fila);
+                                    }
+                                }else{
+                                    Reportes.reporteErrorCondicional(3,elemento.getFila(),elemento.getColumna(),bloque,"Condicional");
+                                    CambiarDeLinea(Fila);
+                                }
+                        }else{
+                            Reportes.reporteErrorCondicional(5,elemento.getFila(),elemento.getColumna(),bloque,"Condicional");
+                            CambiarDeLinea(Fila);
                         }
                         break;
                     case "def":
@@ -335,7 +377,9 @@ public class AnalizadorSintactico {
                             posicion++;
                             elemento = Tokens.get(posicion);
                             if(elemento.getLexema().equals("(")){
+                                posicion++;
                                 while (posicion < Tokens.size() && Fila == Tokens.get(posicion).getFila()) {
+                                    elemento = Tokens.get(posicion);
                                     if(elemento.getTipoToken().equals("ID")||elemento.getTipoToken().equals("Constantes")){
                                         EsComa = false;
                                     }else if(elemento.getLexema().equals(",")){
@@ -350,7 +394,7 @@ public class AnalizadorSintactico {
                                         //bucle para seguir en la siguiente linea
                                         CambiarDeLinea(Fila);
                                     }   
-                                    posicion++;
+                                    posicion++;               
                                 }
                                 if(EsComa){
                                         //No se armo el parametro como se esperaba:
@@ -358,8 +402,6 @@ public class AnalizadorSintactico {
                                 }else{
                                     Reportes.reporteFuncion(Simbolo,"Funciones", "Undefined", elemento.getFila(),elemento.getColumna(),bloque,"Funciones");
                                 }
-                                posicion++;
-                                elemento = Tokens.get(posicion);
                             }else{
                                 //error si no viene un parentesis lo cual define la función:
                                 Reportes.reporteErrorFuncion(3,elemento.getFila(),elemento.getColumna(),bloque,"Funciones");
@@ -388,10 +430,11 @@ public class AnalizadorSintactico {
                                         boolean cerroFor = false;
                                         boolean errorParametro = false;
                                         boolean DoblePuntos = false;
+                                        posicion++;
                                         //aqui va el funcionamiento si se usa metodo range
-                                        while (posicion < Tokens.size() && Fila == Tokens.get(posicion).getFila()) {
-                                            posicion++;
+                                        while (posicion < Tokens.size()&& Fila == Tokens.get(posicion).getFila()) {
                                             elemento = Tokens.get(posicion);
+                                            posicion++;    
                                             if(elemento.getLexema().equals(",")){
                                                 errorParametro = true;
                                             }else if(elemento.getTipoToken().equals("ID")||elemento.getTipoToken().equals("Constantes")){
@@ -523,16 +566,135 @@ public class AnalizadorSintactico {
                                     }
                         break;
                     case "return":
-                        CambiarDeLinea(Fila);
+                        //Return ->	| Return Expresión
+                       //Expresión ->	| (Id|Constante)[{((Arimetico)||(Comparación))( Id|Constante)}*]?
+                        String Cadena = "";
+                        boolean TieneID = false;
+                        boolean CerroParentesis = false;
+                        boolean FinalConstante = false;
+                        boolean TokenRaro = false;
+                        posicion++;
+                        elemento = Tokens.get(posicion);
+                        if(elemento.getTipoToken().equals("ID")||elemento.getTipoToken().equals("Constantes")){
+                            Cadena += " "+elemento.getLexema();
+                            posicion++;
+                            elemento = Tokens.get(posicion);
+                            FinalConstante = true;
+                            if(elemento.getTipoToken().equals("ID")){
+                                TieneID = true;
+                            }
+                            //Si el siguiente elemento de la lista sigue en la misma fila después de la constante se hace analisis
+                            if(Fila == Tokens.get(posicion).getFila()){
+                                switch (elemento.getTipoToken()) {
+                                    case "Aritméticos":
+                                    case "Comparación":
+                                        FinalConstante = false;
+                                        Cadena += " "+elemento.getLexema();
+                                            while (posicion < Tokens.size() && Fila == Tokens.get(posicion).getFila()) {
+                                                elemento = Tokens.get(posicion);
+                                                switch (elemento.getTipoToken()) {
+                                                    case "Aritméticos":
+                                                    case "Comparación":
+                                                        FinalConstante = false;
+                                                        Cadena += " "+elemento.getLexema();
+                                                        break;
+                                                    case "ID":
+                                                    case "Constantes":
+                                                        FinalConstante = true;
+                                                        if(elemento.getTipoToken().equals("ID")){
+                                                            TieneID = true;
+                                                        }
+                                                        Cadena += " "+elemento.getLexema();
+                                                        break;   
+                                                    default:
+                                                        TokenRaro = true;
+                                                        Reportes.reporteErrorReturn(4,elemento.getFila(),elemento.getColumna(),bloque,"Return");
+                                                        Fila--;
+                                                }
+                                                posicion++;
+                                            }
+                                        break;
+                                    case "Otros":
+                                        Cadena += " "+elemento.getLexema();
+                                            while (posicion < Tokens.size()-1 && Fila == Tokens.get(posicion).getFila()) {
+                                                elemento = Tokens.get(posicion);
+                                                switch (elemento.getTipoToken()) {
+                                                    case "Otros":
+                                                        if(elemento.getLexema().equals(")")){
+                                                            CerroParentesis = true;
+                                                            FinalConstante = false;
+                                                            Fila--;
+                                                        }else{
+                                                            FinalConstante = false;
+                                                        }
+                                                        Cadena += " "+elemento.getLexema();
+                                                        break;
+                                                    case "ID":
+                                                    case "Constantes":
+                                                        FinalConstante = true;
+                                                        Cadena += " "+elemento.getLexema();
+                                                        if(elemento.getTipoToken().equals("ID")){
+                                                            TieneID = true;
+                                                        }
+                                                        break;   
+                                                    default:
+                                                        TokenRaro = true;
+                                                        Reportes.reporteErrorReturn(3,elemento.getFila(),elemento.getColumna(),bloque,"Return");
+                                                        Fila--;
+                                                        break;
+                                                }
+                                                posicion++;
+                                            }
+                                        break;
+                                    default:
+                                        Reportes.reporteErrorReturn(2,elemento.getFila(),elemento.getColumna(),bloque,"Return");
+                                        break;
+                                }
+                            }else{
+                                //si el siguiente elemento no está en la misma fila se crea el reporte 
+                                Reportes.reporteCiclo("return","Palabra reservada",Cadena, elemento.getFila(),elemento.getColumna(),bloque,"return");
+                            }              
+                        }else{
+                            //error si se recibe un token que no se esperaba
+                            Reportes.reporteErrorReturn(1,elemento.getFila(),elemento.getColumna(),bloque,"Return");
+                        }
+                        //condiciones para los reportes:
+                        //si hubo algún error no hace nada
+                        if(TokenRaro){
+                        //si no hay error entra al siguiente:
+                        }else{
+                            //si se cerro el parentesis entra si no crea el reporte de error
+                            if(CerroParentesis){
+                                //si construyó bien el parametro entra, si no reporte de error
+                                if(FinalConstante){
+                                    if(TieneID){
+                                        Reportes.reporteCiclo("return","Palabra reservada","Undefined", elemento.getFila(),elemento.getColumna(),bloque,"return");
+                                    }else{
+                                        Reportes.reporteCiclo("return","Palabra reservada",Double.toString(Calculadora.evaluarExpresion(Cadena)), elemento.getFila(),elemento.getColumna(),bloque,"return");
+                                    }
+                                }else{
+                                    Reportes.reporteErrorReturn(6,elemento.getFila(),elemento.getColumna(),bloque,"Return");
+                                }
+                            }else{
+                                Reportes.reporteErrorReturn(5,elemento.getFila(),elemento.getColumna(),bloque,"Return");
+                            }
+                        }
                         Reportes.reporteCiclo("return","Palabra reservada", "Undefined", elemento.getFila(),elemento.getColumna(),bloque,"return");
+                        break;
+                    case "break":
+                        CambiarDeLinea(Fila);
+                        Reportes.reporteCiclo("break","Palabra reservada", "break", elemento.getFila(),elemento.getColumna(),bloque,"return");
                         break;    
                     default:
                         // Código por defecto si la opción no coincide con ningún caso
                         System.out.println("Opción no válida");
                         break;
                 }
+            }else if(elemento.getTipoToken().equals("Comentario")){
+                posicion++;
             }else{
                 Reportes.reporteErrorGeneral(4,elemento.getFila(),elemento.getColumna(),bloque,"General");
+                CambiarDeLinea(Fila);
             }
     }
 
@@ -549,6 +711,11 @@ public class AnalizadorSintactico {
 
     public void ResetBloques(){
         bloque = 1;
+        Reportes = new ReportesSintacticos();
+        calc = new Calculadora();
+        bloque = 1;
+        posicion = 0;
+        Tokens = recopiladorLexico();
     }
 
 

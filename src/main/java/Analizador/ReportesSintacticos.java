@@ -21,6 +21,9 @@ public class ReportesSintacticos {
     public ArrayList<TablaSintactica> getreporteRecopilado() {
         return reporteRecopilado;
     }
+    public ArrayList<TablaSintactica> getErrorRecopilado() {
+        return errorRecopilado;
+    }
     
     public void ResetArreglos(){
         reporteRecopilado = new ArrayList<>();
@@ -133,6 +136,10 @@ public class ReportesSintacticos {
                 token = new TablaSintactica("","Condicional","","Se esperaba una condicional",fila,columna,bloque,nivel);
                 errorRecopilado.add(token);
                 break;
+            case 5:
+                token = new TablaSintactica("","Condicional","","No se soporte el formato del if ingresado",fila,columna,bloque,nivel);
+                errorRecopilado.add(token);
+                break;
             default:
                 System.out.println("wtf xd");
                 break;
@@ -192,7 +199,39 @@ public class ReportesSintacticos {
             TablaSintactica token = new TablaSintactica(Simbolo,tipo,valor,"",fila,columna,bloque,nivel);
             reporteRecopilado.add(token);
     }
-
+                //Metodos para reportes de return:
+    public void reporteErrorReturn(int caso, int fila, int columna, int bloque, String nivel){
+        TablaSintactica token;
+        switch(caso){
+            case 1:
+                token = new TablaSintactica("","Return","","No se recibió un token valido para el Return",fila,columna,bloque,nivel);
+                errorRecopilado.add(token);
+                break;
+            case 2:
+                token = new TablaSintactica("","Return","","No se recibió un token valido después del valor",fila,columna,bloque,nivel);
+                errorRecopilado.add(token);
+                break;
+            case 3:
+                token = new TablaSintactica("","Return","","en el parametro se recibió un token invalido",fila,columna,bloque,nivel);
+                errorRecopilado.add(token);
+                break;
+            case 4:
+                token = new TablaSintactica("","Return","","se recibió un token invalido en el retorno",fila,columna,bloque,nivel);
+                errorRecopilado.add(token);
+                break;
+            case 5:
+                token = new TablaSintactica("","Return","","Se esperaba un ) que cerrara el parametro",fila,columna,bloque,nivel);
+                errorRecopilado.add(token);
+                break;
+            case 6:
+                token = new TablaSintactica("","Return","","Se esperaba un id o constante más para el parametro",fila,columna,bloque,nivel);
+                errorRecopilado.add(token);
+                break;    
+            default:
+                break;
+        }
+    }
+    
                 //Metodos para reportes generales:
     public void reporteErrorGeneral(int caso, int fila, int columna, int bloque, String nivel){
             TablaSintactica token = new TablaSintactica("","General","","No se ingresó un token valido",fila,columna,bloque,nivel);

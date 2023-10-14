@@ -11,6 +11,8 @@ import Tokens.Simbolos;
 import Tokens.TablaSintactica;
 import java.util.ArrayList;
 import javax.swing.JTable;
+import javax.swing.SwingConstants;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -36,7 +38,9 @@ public class TablasGenerales extends javax.swing.JDialog {
          this.setLocationRelativeTo(null);
          this.setResizable(false);
         DefaultTableModel model = new DefaultTableModel();
+        //switch que define el comportamiento de la tabla según el parametro X que se envie
         switch(X){
+            //caso 1 para el reporte Lexico:
             case 1:
                 reporteRecopiladoL = ReporteLexico.gettokenRecopilado();
                 model.addColumn("Token");
@@ -50,7 +54,8 @@ public class TablasGenerales extends javax.swing.JDialog {
                 }
                 Tabla.setModel(model);
                 break;
-            case 2:       
+                //tabla Global Sintactica
+            case 2:    //caso 2 para la tabla Global sintactica   
         reporteRecopiladoS = ReporteSintactico.getreporteRecopilado();
                 model.addColumn("Símbolo");
                 model.addColumn("Tipo");
@@ -58,12 +63,19 @@ public class TablasGenerales extends javax.swing.JDialog {
                 model.addColumn("Línea");
                 model.addColumn("Columna");
                 model.addColumn("Bloque");
-                Tabla = new JTable(model);
                     for (TablaSintactica dato : reporteRecopiladoS) {
                     Object[] fila = {dato.getSimbolo(), dato.getTipo(), dato.getValor(), dato.getfila(), dato.getcolumna(),dato.getbloque()};
                     model.addRow(fila);
                 }
+                Tabla.setModel(model);
+                Tabla.getColumnModel().getColumn(2).setPreferredWidth(250);
+                Tabla.getColumnModel().getColumn(0).setPreferredWidth(70);
+                Tabla.getColumnModel().getColumn(1).setPreferredWidth(70);
+                Tabla.getColumnModel().getColumn(3).setPreferredWidth(50);
+                Tabla.getColumnModel().getColumn(4).setPreferredWidth(50);
+                Tabla.getColumnModel().getColumn(5).setPreferredWidth(50); 
                 break;
+                //caso 3 para errores lexicos
             case 3:
                 reporteRecopiladoL = ReporteLexico.getErroresRecopilado();
                 model.addColumn("Token");
@@ -77,9 +89,34 @@ public class TablasGenerales extends javax.swing.JDialog {
                 }
                 Tabla.setModel(model);
                 break;
+            case 4:       
+                reporteRecopiladoS = ReporteSintactico.getErrorRecopilado();
+                model.addColumn("Tipo");
+                model.addColumn("Descripción");
+                model.addColumn("Línea");
+                model.addColumn("Columna");
+                model.addColumn("Bloque");
+                    for (TablaSintactica dato : reporteRecopiladoS) {
+                    Object[] fila = {dato.getTipo(), dato.getDescripcion(), dato.getfila(), dato.getcolumna(),dato.getbloque()};
+                    model.addRow(fila);
+                }
+                Tabla.setModel(model);    
+                Tabla.getColumnModel().getColumn(1).setPreferredWidth(250);
+                Tabla.getColumnModel().getColumn(0).setPreferredWidth(50);
+                Tabla.getColumnModel().getColumn(2).setPreferredWidth(50);
+                Tabla.getColumnModel().getColumn(3).setPreferredWidth(50);
+                Tabla.getColumnModel().getColumn(4).setPreferredWidth(50);   
+                break;    
             default:
                 break;
         }
+        // Crea un renderizador para centrar el contenido
+                DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+                centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+                    // Aplica el renderizador a todas las columnas
+                    for (int i = 0; i < Tabla.getColumnCount(); i++) {
+                        Tabla.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+                    }
         Tabla.setEnabled(false);
     }
 
